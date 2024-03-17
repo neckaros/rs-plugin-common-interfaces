@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
+#[cfg(feature = "rusqlite")]
+pub mod rusqlite;
+
 pub struct PluginInformation {
     pub name: String,
     pub kind: PluginType,

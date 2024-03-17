@@ -4,6 +4,8 @@ use strum_macros::EnumString;
 #[cfg(feature = "rusqlite")]
 pub mod rusqlite;
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")] 
 pub struct PluginInformation {
     pub name: String,
     pub kind: PluginType,

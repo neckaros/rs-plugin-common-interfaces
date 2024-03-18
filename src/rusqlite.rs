@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
-use crate::PluginType;
+use crate::{PluginType, CredentialType};
 
 impl FromSql for PluginType {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {

@@ -21,3 +21,21 @@ impl ToSql for PluginType {
         Ok(ToSqlOutput::from(r))
     }
 }
+
+
+impl FromSql for CredentialType {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).and_then(|as_string| {
+            let r = CredentialType::from_str(&as_string).map_err(|_| FromSqlError::InvalidType);
+            r
+        })
+    }
+}
+
+impl ToSql for CredentialType {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
+        let l = &self.clone();
+        let r = l.to_string();
+        Ok(ToSqlOutput::from(r))
+    }
+}

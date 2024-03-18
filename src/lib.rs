@@ -23,6 +23,7 @@ pub struct PluginInformation {
 pub enum PluginType {
 	ImageClassification,
     UrlParser,
+    Request,
     #[default]
     Other,
 }

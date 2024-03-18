@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use strum_macros::EnumString;
 
 #[cfg(feature = "rusqlite")]
@@ -28,11 +29,25 @@ pub enum PluginType {
     Other,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
 pub enum CredentialType {
 	Password,
     Oauth,
+    #[default]
     Token,
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct PluginCredential {
+    pub kind: CredentialType,
+    pub login: Option<String>,
+    pub password: Option<String>,
+    pub settings: Value,
+    pub user_ref: Option<String>,
+    pub refresh_token: Option<String>,
+    pub expires: Option<u64>,
 }

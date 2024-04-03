@@ -25,6 +25,7 @@ pub enum PluginType {
 	ImageClassification,
     UrlParser,
     Request,
+    Lookup,
     #[default]
     Other,
 }
@@ -33,6 +34,7 @@ pub enum PluginType {
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
 pub enum CredentialType {
+	Url,
 	Password,
     Oauth,
     #[default]

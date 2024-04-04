@@ -17,6 +17,21 @@ pub struct PluginInformation {
     pub oauth_url: Option<String>
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum Resolution {
+    #[strum(serialize = "4K")]
+	FourK,
+    #[strum(serialize = "1080p")]
+    FullHD,
+    #[strum(serialize = "720p")]
+    HD,
+    Custom(String),
+    Other,
+    #[default]
+    Unknown,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
 #[serde(rename_all = "camelCase")] 

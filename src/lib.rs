@@ -17,6 +17,11 @@ pub struct PluginInformation {
     pub oauth_url: Option<String>
 }
 
+
+fn text_contains(text: &str, contains: &str) -> bool {
+    text.contains(&format!(".{}.", contains)) || text.starts_with(contains) || text.ends_with(contains)
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
@@ -38,7 +43,7 @@ pub enum Resolution {
 #[strum(serialize_all = "camelCase")]
 pub enum RsResolution {
     #[strum(serialize = "4K")]
-	FourK,
+	UHD,
     #[strum(serialize = "1080p")]
     FullHD,
     #[strum(serialize = "720p")]
@@ -52,16 +57,39 @@ pub enum RsResolution {
 impl RsResolution {
     pub fn from_filename(filename: &str) -> Self {
         let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
-        if modified_filename.contains(".1080p.") || modified_filename.starts_with("1080p") || modified_filename.ends_with("1080p") {
+        if text_contains(&modified_filename, "1080p") {
             RsResolution::FullHD
-        } else if modified_filename.contains(".720p.") || modified_filename.starts_with("720p") || modified_filename.ends_with("720p") {
+        } else if text_contains(&modified_filename, "720p") {
             RsResolution::HD
-        } else if modified_filename.contains(".720p.") || modified_filename.starts_with("720p") || modified_filename.ends_with("720p") {
-            RsResolution::FullHD
-        }  else if modified_filename.contains(".4K.") || modified_filename.starts_with("4K") || modified_filename.ends_with("4K") {
-            RsResolution::FourK
+        } else if text_contains(&modified_filename, "4k") {
+            RsResolution::UHD
         } else {
             RsResolution::Unknown
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum RsVideoCodec {
+	X265,
+    H264,
+    #[strum(default)]
+    Custom(String),
+    #[default]
+    Unknown,
+}
+
+impl RsVideoCodec {
+    pub fn from_filename(filename: &str) -> Self {
+        let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
+        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") {
+            RsVideoCodec::X265
+        } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") {
+            RsVideoCodec::H264
+        } else {
+            RsVideoCodec::Unknown
         }
     }
 }
@@ -88,24 +116,49 @@ pub enum RsAudio {
     Unknown,
 }
 
+
 impl RsAudio {
     pub fn from_filename(filename: &str) -> Self {
         let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
-        if modified_filename.contains(".atmos.") || modified_filename.starts_with("atmos") || modified_filename.ends_with("atmos") {
+        if text_contains(&modified_filename, "atmos") {
             RsAudio::Atmos
-        } else if modified_filename.contains(".ddp5.1.") || modified_filename.starts_with("ddp5.1") || modified_filename.ends_with("ddp5.1") {
+        } else if text_contains(&modified_filename, "ddp5.1") {
             RsAudio::DDP51
-        } else if modified_filename.contains(".dtshd.") || modified_filename.starts_with("dtshd") || modified_filename.ends_with("dtshd") {
+        } else if text_contains(&modified_filename, "dtshd") {
             RsAudio::DTSHD
-        } else if modified_filename.contains(".dtsx.") || modified_filename.starts_with("dtsx") || modified_filename.ends_with("dtsx") {
+        } else if text_contains(&modified_filename, "dtsx") {
             RsAudio::DTSX
-        } else if modified_filename.contains(".dts.") || modified_filename.starts_with("dts") || modified_filename.ends_with("dts") {
+        } else if text_contains(&modified_filename, "dts") {
             RsAudio::DTS
-        } else if modified_filename.contains(".ac35.1.") || modified_filename.starts_with("ac35.1") || modified_filename.ends_with("ac35.1") {
+        } else if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
             RsAudio::AC351
         } else {
             RsAudio::Unknown
         }
+    }
+
+    pub fn list_from_filename(filename: &str) -> Vec<Self> {
+        let mut result = vec![];
+        let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
+        if text_contains(&modified_filename, "atmos") {
+            result.push(RsAudio::Atmos);
+        } 
+        if text_contains(&modified_filename, "ddp5.1") {
+            result.push(RsAudio::DDP51);
+        } 
+        if text_contains(&modified_filename, "dtshd") {
+            result.push(RsAudio::DTSHD);
+        } 
+        if text_contains(&modified_filename, "dtsx") {
+            result.push(RsAudio::DTSX);
+        } 
+        if text_contains(&modified_filename, "dts") {
+            result.push(RsAudio::DTS);
+        } 
+        if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
+            result.push(RsAudio::AC351);
+        }
+        result
     }
 }
 
@@ -158,12 +211,12 @@ mod tests {
         assert_eq!(RsResolution::from_filename("Test.2024.S01E01.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::FullHD);
         assert_eq!(RsResolution::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::HD);  
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::Unknown);
-        assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_4K_VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::Unknown);
+        assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_4K_VOSTFR.DSNP.WEB-DL.DDP5.Atmos.1.H.264"), RsResolution::UHD);
     }
 
     #[test]
     fn resolution_string() {
-        assert_eq!("4K", RsResolution::FourK.to_string());
+        assert_eq!("4K", RsResolution::UHD.to_string());
         assert_eq!(RsResolution::from_str("1080p").unwrap(), RsResolution::FullHD);
         assert_eq!(RsResolution::from_str("erzr").unwrap(), RsResolution::Custom("erzr".to_owned()));
     }
@@ -171,5 +224,17 @@ mod tests {
     fn audio_parsing() {
         assert_eq!(RsAudio::from_filename("Test.2024.S01E01.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsAudio::DDP51);
         assert_eq!(RsAudio::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1._atmos_H.264"), RsAudio::Atmos);  
+        let list = RsAudio::list_from_filename("TestIn4k.2024.S01E01_4K_VOSTFR.DSNP.WEB-DL.DDP5.1.Atmos.H.264");
+        assert_eq!(list.len(), 2);
+        assert!(list.contains(&RsAudio::Atmos));
+        assert!(list.contains(&RsAudio::DDP51));
+    }
+
+    #[test]
+    fn videocodec_parsing() {
+        assert_eq!(RsVideoCodec::from_filename("Test.2024.S01E01.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsVideoCodec::H264);
+        assert_eq!(RsVideoCodec::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1.HEVC"), RsVideoCodec::X265);  
+        assert_eq!(RsVideoCodec::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.X.265"), RsVideoCodec::X265);
+        
     }
 }

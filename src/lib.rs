@@ -23,24 +23,6 @@ fn text_contains(text: &str, contains: &str) -> bool {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
-#[strum(serialize_all = "camelCase")]
-pub enum Resolution {
-    #[strum(serialize = "4K")]
-	FourK,
-    #[strum(serialize = "1080p")]
-    FullHD,
-    #[strum(serialize = "720p")]
-    HD,
-    Custom(String),
-    Other,
-    #[default]
-    Unknown,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
-#[strum(serialize_all = "camelCase")]
 pub enum RsResolution {
     #[strum(serialize = "4K")]
 	UHD,
@@ -70,8 +52,6 @@ impl RsResolution {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
-#[strum(serialize_all = "camelCase")]
 pub enum RsVideoCodec {
 	X265,
     H264,
@@ -95,8 +75,6 @@ impl RsVideoCodec {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
-#[strum(serialize_all = "camelCase")]
 pub enum RsAudio {
     #[strum(serialize = "Atmos")]
 	Atmos,

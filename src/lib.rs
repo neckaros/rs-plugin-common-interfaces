@@ -178,6 +178,21 @@ pub struct PluginCredential {
 }
 
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum MediaType {
+	Movie,
+	Episode,
+    Book,
+    Song,
+    #[strum(default)]
+    Custom(String),
+    #[default]
+    Unknown,
+}
+
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;

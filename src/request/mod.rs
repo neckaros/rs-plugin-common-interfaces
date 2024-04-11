@@ -99,9 +99,9 @@ pub struct RsRequest {
     pub status: RsRequestStatus,
 
     /// If true this request can be saved for later use and will remain valid
-    /// If Permanant is true but status is intermediate the process will go through request plugins to try to get a permanant link
+    /// If Permanent is true but status is intermediate the process will go through request plugins to try to get a permanant link
     #[serde(default)]
-    pub permanant: bool,
+    pub permanent: bool,
     
     #[serde(skip_serializing_if = "Option::is_none")]
     pub referer: Option<String>,

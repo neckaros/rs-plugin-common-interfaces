@@ -5,6 +5,8 @@ use strum_macros::EnumString;
 #[cfg(feature = "rusqlite")]
 pub mod rusqlite;
 
+pub mod request;
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct PluginInformation {
@@ -206,6 +208,7 @@ mod tests {
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::Unknown);
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_4K_VOSTFR.DSNP.WEB-DL.DDP5.Atmos.1.H.264"), RsResolution::UHD);
     }
+
 
     #[test]
     fn resolution_string() {

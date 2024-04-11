@@ -27,12 +27,12 @@ impl FromStr for RsCookie {
         let mut splitted = line.split(';');
         Ok(RsCookie { 
             domain: splitted.next().ok_or(error::RequestError::UnableToParseCookieString("domain".to_owned(), line.to_owned()))?.to_owned(), 
-            http_only: "true" == splitted.next().ok_or(error::RequestError::UnableToParseCookieString("http_only".to_owned(), line.to_owned()))?.to_owned(), 
+            http_only: "true" == splitted.next().ok_or(error::RequestError::UnableToParseCookieString("http_only".to_owned(), line.to_owned()))?, 
             path: splitted.next().ok_or(error::RequestError::UnableToParseCookieString("path".to_owned(), line.to_owned()))?.to_owned(), 
-            secure: "true" == splitted.next().ok_or(error::RequestError::UnableToParseCookieString("secure".to_owned(), line.to_owned()))?.to_owned(), 
+            secure: "true" == splitted.next().ok_or(error::RequestError::UnableToParseCookieString("secure".to_owned(), line.to_owned()))?, 
             expiration: {
                 let t = splitted.next().ok_or(error::RequestError::UnableToParseCookieString("expiration".to_owned(), line.to_owned()))?.to_owned();
-                if t == "" {
+                if t.is_empty() {
                     None  
                 } else {
                     Some(t.parse().map_err(|_| error::RequestError::UnableToParseCookieString("expiration parsing".to_owned(), line.to_owned()))?)
@@ -45,7 +45,7 @@ impl FromStr for RsCookie {
 
 impl  RsCookie {
     pub fn netscape(&self) -> String {
-        let second = if self.domain.starts_with(".") {
+        let second = if self.domain.starts_with('.') {
             "TRUE"
         } else {
             "FALSE"
@@ -97,6 +97,11 @@ pub struct RsRequest {
     pub filename: Option<String>,
     #[serde(default)]
     pub status: RsRequestStatus,
+
+    /// If true this request can be saved for later use and will remain valid
+    /// If Permanant is true but status is intermediate the process will go through request plugins to try to get a permanant link
+    #[serde(default)]
+    pub permanant: bool,
     
     #[serde(skip_serializing_if = "Option::is_none")]
     pub referer: Option<String>,
@@ -159,17 +164,14 @@ impl RsRequest {
                 self.videocodec = Some(videocodec);
             }
             let audio = RsAudio::list_from_filename(filename);
-            if audio.len() > 0 {
+            if !audio.is_empty() {
                 self.audio = Some(audio);
             }
 
             let re = Regex::new(r"(?i)s(\d+)e(\d+)").unwrap();
-            match re.captures(filename) {
-                Some(caps) => {
-                    self.season = caps[1].parse::<u32>().ok();
-                    self.episode = caps[2].parse::<u32>().ok();
-                }
-                None => (),
+            if let Some(caps) = re.captures(filename) {
+                self.season = caps[1].parse::<u32>().ok();
+                self.episode = caps[2].parse::<u32>().ok();
             }
         }
  
@@ -189,7 +191,7 @@ pub enum RsRequestStatus {
     ///   -First call this plugin again with `add` method
     ///   -Check status and once ready call `process` again
     RequireAdd,
-    /// Other plugin can process it
+    /// Modified but need a second pass of plugins
     Intermediate,
     /// Multiple files found, current plugin need to be recalled with a `selected_file``
     NeedFileSelection,
@@ -214,9 +216,6 @@ pub struct RsRequestFiles {
 pub struct RsRequestPluginRequest {
     pub request: RsRequest,
     pub credential: Option<PluginCredential>,
-    ///Plugin should only send back request that are usable long term and can be saved to the DB for later use
-    #[serde(default)]
-    pub savable: bool
 }
 
 

@@ -8,7 +8,7 @@ use strum_macros::EnumString;
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
-pub enum RsLookupResult {
+pub enum RsLookupSourceResult {
     Requests(Vec<RsRequest>),
     NotFound,
     #[default]

@@ -9,16 +9,20 @@ pub mod request;
 pub mod url;
 pub mod lookup;
 
+pub const INTERFACE_VERSION: u16 = 1;
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct PluginInformation {
     pub name: String,
-    pub kind: PluginType,
-    pub version: usize,
+    pub capabilities: Vec<PluginType>,
     pub publisher: String,
     pub description: String,
     pub credential_kind: Option<CredentialType>,
-    pub oauth_url: Option<String>
+    pub oauth_url: Option<String>,
+    pub version: u16,
+
+    pub interface_version: u16,
 }
 
 
@@ -42,7 +46,7 @@ pub enum RsResolution {
 
 impl RsResolution {
     pub fn from_filename(filename: &str) -> Self {
-        let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
+        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "1080p") {
             RsResolution::FullHD
         } else if text_contains(&modified_filename, "720p") {
@@ -67,7 +71,7 @@ pub enum RsVideoCodec {
 
 impl RsVideoCodec {
     pub fn from_filename(filename: &str) -> Self {
-        let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
+        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") {
             RsVideoCodec::X265
         } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") {
@@ -101,7 +105,7 @@ pub enum RsAudio {
 
 impl RsAudio {
     pub fn from_filename(filename: &str) -> Self {
-        let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
+        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "atmos") {
             RsAudio::Atmos
         } else if text_contains(&modified_filename, "ddp5.1") {
@@ -121,7 +125,7 @@ impl RsAudio {
 
     pub fn list_from_filename(filename: &str) -> Vec<Self> {
         let mut result = vec![];
-        let modified_filename = filename.replace(" ", ".").replace("-", ".").replace("_", ".").to_lowercase();
+        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "atmos") {
             result.push(RsAudio::Atmos);
         } 

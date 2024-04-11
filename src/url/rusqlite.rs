@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{RsLink, RsLinkType};
+use crate::url::{RsLink, RsLinkType};
 use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
 

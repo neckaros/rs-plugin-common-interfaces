@@ -6,6 +6,8 @@ use strum_macros::EnumString;
 pub mod rusqlite;
 
 pub mod request;
+pub mod url;
+pub mod lookup;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 

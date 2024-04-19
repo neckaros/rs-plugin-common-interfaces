@@ -19,6 +19,7 @@ pub enum ElementType {
 
 #[cfg(feature = "rusqlite")]
 pub mod element_type_rusqlite {
+    use std::str::FromStr;
     use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
     use super::ElementType;

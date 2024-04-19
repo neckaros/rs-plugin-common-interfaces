@@ -17,7 +17,7 @@ pub enum ElementType {
     Unknown,
 }
 
-#[cfg(rusqlite)]
+#[cfg(feature = "rusqlite")]
 pub mod element_type_rusqlite {
     use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 

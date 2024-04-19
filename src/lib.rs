@@ -2,6 +2,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use strum_macros::EnumString;
 
+pub use domain::element_type::ElementType;
+pub use request::{RsRequest, RsCookie, RsCookies, RsRequestFiles, RsRequestPluginRequest, RsRequestStatus};
+pub use url::{RsLink, RsLinkType};
+pub use lookup::{RsLookupEpisode, RsLookupMovie, RsLookupQuery, RsLookupSourceResult, RsLookupWrapper};
+
 #[cfg(feature = "rusqlite")]
 pub mod rusqlite;
 

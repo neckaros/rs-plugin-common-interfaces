@@ -9,6 +9,8 @@ pub mod request;
 pub mod url;
 pub mod lookup;
 
+pub mod domain;
+
 pub const INTERFACE_VERSION: u16 = 1;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -213,6 +215,8 @@ mod tests {
         assert_eq!(RsResolution::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::HD);  
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::Unknown);
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_4K_VOSTFR.DSNP.WEB-DL.DDP5.Atmos.1.H.264"), RsResolution::UHD);
+        
+        assert_eq!(RsResolution::from_filename("Foot.UCL.FC%20Barcelone%20vs%20PSG.French.1080p50.HEVC.AAC.16_04_2024-Freek911.mkv"), RsResolution::FullHD);
     }
 
 

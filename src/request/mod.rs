@@ -285,4 +285,17 @@ mod tests {
         assert_eq!(req.audio.unwrap().len(), 1);
         Ok(())
     }
+
+    #[test]
+    fn test_parse2() -> Result<(), RequestError> {
+        let mut req = RsRequest { filename: Some("Shogun.2024.S01E05.MULTi.HDR.DV.2160p.WEB.H265-FW".to_owned()), ..Default::default()};
+        req.parse_filename();
+        assert_eq!(req.season.expect("a season"), 1);
+        assert_eq!(req.episode.expect("an episode"), 5);
+        assert_eq!(req.resolution.expect("a resolution"), RsResolution::UHD);
+        assert_eq!(req.videocodec.expect("a videocodec"), RsVideoCodec::X265);
+
+        Ok(())
+    }
 }
+

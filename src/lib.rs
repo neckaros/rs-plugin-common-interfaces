@@ -58,7 +58,7 @@ impl RsResolution {
             RsResolution::FullHD
         } else if text_contains(&modified_filename, "720p") {
             RsResolution::HD
-        } else if text_contains(&modified_filename, "4k") {
+        } else if text_contains(&modified_filename, "4k") || text_contains(&modified_filename, "2160p") {
             RsResolution::UHD
         } else {
             RsResolution::Unknown
@@ -79,9 +79,9 @@ pub enum RsVideoCodec {
 impl RsVideoCodec {
     pub fn from_filename(filename: &str) -> Self {
         let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") {
+        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") || text_contains(&modified_filename, "h265") {
             RsVideoCodec::X265
-        } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") {
+        } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") || text_contains(&modified_filename, "x.264")  || text_contains(&modified_filename, "x264"){
             RsVideoCodec::H264
         } else {
             RsVideoCodec::Unknown

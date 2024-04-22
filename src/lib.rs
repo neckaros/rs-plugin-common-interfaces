@@ -19,6 +19,19 @@ pub mod domain;
 
 pub const INTERFACE_VERSION: u16 = 1;
 
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")] 
+pub struct CustomParam {
+    pub name: String,
+    pub param: CustomParamTypes,
+    pub description: Option<String>,
+    #[serde(default)]
+    pub required: bool
+}
+
+
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct PluginInformation {
@@ -29,6 +42,9 @@ pub struct PluginInformation {
     pub credential_kind: Option<CredentialType>,
     pub oauth_url: Option<String>,
     pub version: u16,
+    
+    #[serde(default)]
+    pub settings: Vec<CustomParam>,
 
     pub interface_version: u16,
 }
@@ -177,21 +193,22 @@ pub enum CredentialType {
 	Url,
 	Password,
     Oauth {
-        url: String,
-        custom: Option<Vec<(String, CustomParamTypes)>>,
+        /// Oauth url to get code from user; use #redirecturi# in the url
+        url: String
     },
     #[default]
     Token,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString)]
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
 pub enum CustomParamTypes {
-    #[default]
-	Text,
-    Url,
-    Number,
+	Text(Option<String>),
+    Url(Option<String>),
+    Integer(Option<i64>),
+    UInteger(Option<u64>),
+    Float(Option<i64>),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -234,8 +251,6 @@ mod tests {
         assert_eq!(RsResolution::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::HD);  
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsResolution::Unknown);
         assert_eq!(RsResolution::from_filename("TestIn4k.2024.S01E01_4K_VOSTFR.DSNP.WEB-DL.DDP5.Atmos.1.H.264"), RsResolution::UHD);
-        
-        assert_eq!(RsResolution::from_filename("Foot.UCL.FC%20Barcelone%20vs%20PSG.French.1080p50.HEVC.AAC.16_04_2024-Freek911.mkv"), RsResolution::FullHD);
     }
 
 

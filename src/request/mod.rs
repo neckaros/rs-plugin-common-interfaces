@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use regex::Regex;
+use serde_json::Value;
 use crate::PluginCredential;
 use crate::{RsAudio, RsResolution, RsVideoCodec};
 use serde::{Deserialize, Serialize};
@@ -103,6 +104,10 @@ pub struct RsRequest {
     #[serde(default)]
     pub permanent: bool,
     
+    pub json_body: Option<Value>,
+    #[serde(default)]
+    pub method: RsRequestStatus,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub referer: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -199,6 +204,21 @@ pub enum RsRequestStatus {
     FinalPrivate,
     /// `url` is ready and can be directly sent to _any_ user directly (using redirect)
     FinalPublic
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum RsRequestMethod {
+    
+    #[default]
+	Get,
+    Post,
+    Patch,
+    Delete,
+    Head,
+  
 }
 
 

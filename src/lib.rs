@@ -13,6 +13,7 @@ pub mod rusqlite;
 pub mod request;
 pub mod url;
 pub mod lookup;
+pub mod provider;
 
 pub mod domain;
 
@@ -174,11 +175,23 @@ pub enum PluginType {
 pub enum CredentialType {
 	Url,
 	Password,
-    Oauth,
+    Oauth {
+        url: String,
+        custom: Option<Vec<(String, CustomParamTypes)>>,
+    },
     #[default]
     Token,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum CustomParamTypes {
+    #[default]
+	Text,
+    Url,
+    Number,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 

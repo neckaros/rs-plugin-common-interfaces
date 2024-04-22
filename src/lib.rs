@@ -165,6 +165,7 @@ pub enum PluginType {
     UrlParser,
     Request,
     Lookup,
+    Provider,
     #[default]
     Other,
 }

@@ -7,6 +7,8 @@ pub use request::{RsRequest, RsCookie, RsCookies, RsRequestFiles, RsRequestPlugi
 pub use url::{RsLink, RsLinkType};
 pub use lookup::{RsLookupEpisode, RsLookupMovie, RsLookupQuery, RsLookupSourceResult, RsLookupWrapper};
 
+pub use video::{RsAudio, RsResolution, RsVideoCodec, RsVideoFormat};
+
 #[cfg(feature = "rusqlite")]
 pub mod rusqlite;
 
@@ -14,6 +16,8 @@ pub mod request;
 pub mod url;
 pub mod lookup;
 pub mod provider;
+
+pub mod video;
 
 pub mod domain;
 
@@ -50,127 +54,6 @@ pub struct PluginInformation {
 }
 
 
-fn text_contains(text: &str, contains: &str) -> bool {
-    text.contains(&format!(".{}.", contains)) || text.starts_with(contains) || text.ends_with(contains)
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-pub enum RsResolution {
-    #[strum(serialize = "4K")]
-	UHD,
-    #[strum(serialize = "1080p")]
-    FullHD,
-    #[strum(serialize = "720p")]
-    HD,
-    #[strum(default)]
-    Custom(String),
-    #[default]
-    Unknown,
-}
-
-impl RsResolution {
-    pub fn from_filename(filename: &str) -> Self {
-        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "1080p") {
-            RsResolution::FullHD
-        } else if text_contains(&modified_filename, "720p") {
-            RsResolution::HD
-        } else if text_contains(&modified_filename, "4k") || text_contains(&modified_filename, "2160p") {
-            RsResolution::UHD
-        } else {
-            RsResolution::Unknown
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-pub enum RsVideoCodec {
-	X265,
-    H264,
-    #[strum(default)]
-    Custom(String),
-    #[default]
-    Unknown,
-}
-
-impl RsVideoCodec {
-    pub fn from_filename(filename: &str) -> Self {
-        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") || text_contains(&modified_filename, "h265") {
-            RsVideoCodec::X265
-        } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") || text_contains(&modified_filename, "x.264")  || text_contains(&modified_filename, "x264"){
-            RsVideoCodec::H264
-        } else {
-            RsVideoCodec::Unknown
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-pub enum RsAudio {
-    #[strum(serialize = "Atmos")]
-	Atmos,
-    #[strum(serialize = "DDP5.1")]
-	DDP51,
-    #[strum(serialize = "DTSHD")]
-    DTSHD,
-    #[strum(serialize = "DTSX")]
-    DTSX,
-    #[strum(serialize = "DTS")]
-    DTS,
-    #[strum(serialize = "AC35.1")]
-    AC351,
-    #[strum(default)]
-    Custom(String),
-    #[default]
-    Unknown,
-}
-
-
-impl RsAudio {
-    pub fn from_filename(filename: &str) -> Self {
-        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "atmos") {
-            RsAudio::Atmos
-        } else if text_contains(&modified_filename, "ddp5.1") {
-            RsAudio::DDP51
-        } else if text_contains(&modified_filename, "dtshd") {
-            RsAudio::DTSHD
-        } else if text_contains(&modified_filename, "dtsx") {
-            RsAudio::DTSX
-        } else if text_contains(&modified_filename, "dts") {
-            RsAudio::DTS
-        } else if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
-            RsAudio::AC351
-        } else {
-            RsAudio::Unknown
-        }
-    }
-
-    pub fn list_from_filename(filename: &str) -> Vec<Self> {
-        let mut result = vec![];
-        let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "atmos") {
-            result.push(RsAudio::Atmos);
-        } 
-        if text_contains(&modified_filename, "ddp5.1") {
-            result.push(RsAudio::DDP51);
-        } 
-        if text_contains(&modified_filename, "dtshd") {
-            result.push(RsAudio::DTSHD);
-        } 
-        if text_contains(&modified_filename, "dtsx") {
-            result.push(RsAudio::DTSX);
-        } 
-        if text_contains(&modified_filename, "dts") {
-            result.push(RsAudio::DTS);
-        } 
-        if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
-            result.push(RsAudio::AC351);
-        }
-        result
-    }
-}
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
@@ -273,8 +156,18 @@ mod tests {
     #[test]
     fn videocodec_parsing() {
         assert_eq!(RsVideoCodec::from_filename("Test.2024.S01E01.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264"), RsVideoCodec::H264);
-        assert_eq!(RsVideoCodec::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1.HEVC"), RsVideoCodec::X265);  
-        assert_eq!(RsVideoCodec::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.X.265"), RsVideoCodec::X265);
+        assert_eq!(RsVideoCodec::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1.HEVC"), RsVideoCodec::H265);  
+        assert_eq!(RsVideoCodec::from_filename("TestIn4k.2024.S01E01_VOSTFR.DSNP.WEB-DL.DDP5.1.X.265"), RsVideoCodec::H265);
         
+    }
+
+    #[test]
+    fn video_format_parsing() {
+        assert_eq!(RsVideoFormat::from_filename("Test.2024.S01E01.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264.mp4"), RsVideoFormat::Mp4);
+        assert_eq!(RsVideoFormat::from_filename("Test.2024.S01E01_720p VOSTFR.DSNP.WEB-DL.DDP5.1._atmos_H.264"), RsVideoFormat::Other);  
+        assert_eq!(RsVideoFormat::from_filename("Test.2024.S01E01.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264.WMV"), RsVideoFormat::Wmv);
+        
+        assert_eq!(RsVideoFormat::Mp4.to_string(), "mp4");
+        assert_eq!(RsVideoFormat::from_str("mkv").unwrap(), RsVideoFormat::Mkv);
     }
 }

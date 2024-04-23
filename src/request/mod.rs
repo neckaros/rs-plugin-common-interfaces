@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use regex::Regex;
 use serde_json::Value;
-use crate::PluginCredential;
+use crate::{PluginCredential, RsVideoFormat};
 use crate::{RsAudio, RsResolution, RsVideoCodec};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
@@ -140,6 +140,8 @@ pub struct RsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolution: Option<RsResolution>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub video_format: Option<RsVideoFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub videocodec: Option<RsVideoCodec>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub audio: Option<Vec<RsAudio>>,
@@ -163,6 +165,10 @@ impl RsRequest {
             let resolution = RsResolution::from_filename(filename);
             if resolution != RsResolution::Unknown {
                 self.resolution = Some(resolution);
+            }
+            let video_format = RsVideoFormat::from_filename(filename);
+            if video_format != RsVideoFormat::Other {
+                self.video_format = Some(video_format);
             }
             let videocodec = RsVideoCodec::from_filename(filename);
             if videocodec != RsVideoCodec::Unknown {
@@ -296,12 +302,13 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<(), RequestError> {
-        let mut req = RsRequest { filename: Some("Shogun.2024.S01E01.Anjin.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264-NTb".to_owned()), ..Default::default()};
+        let mut req = RsRequest { filename: Some("Shogun.2024.S01E01.Anjin.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264-NTb.mkv".to_owned()), ..Default::default()};
         req.parse_filename();
         assert_eq!(req.season.unwrap(), 1);
         assert_eq!(req.episode.unwrap(), 1);
         assert_eq!(req.resolution.unwrap(), RsResolution::FullHD);
         assert_eq!(req.videocodec.unwrap(), RsVideoCodec::H264);
+        assert_eq!(req.video_format.unwrap(), RsVideoFormat::Mkv);
         assert_eq!(req.audio.unwrap().len(), 1);
         Ok(())
     }
@@ -313,7 +320,7 @@ mod tests {
         assert_eq!(req.season.expect("a season"), 1);
         assert_eq!(req.episode.expect("an episode"), 5);
         assert_eq!(req.resolution.expect("a resolution"), RsResolution::UHD);
-        assert_eq!(req.videocodec.expect("a videocodec"), RsVideoCodec::X265);
+        assert_eq!(req.videocodec.expect("a videocodec"), RsVideoCodec::H265);
 
         Ok(())
     }

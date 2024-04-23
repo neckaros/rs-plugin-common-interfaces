@@ -11,10 +11,12 @@ fn text_contains(text: &str, contains: &str) -> bool {
 #[strum(serialize_all = "lowercase")]
 pub enum RsVideoFormat {
 	Mp4,
+	M4v,
+    Mov,
     Mkv,
-    Av1,
     WebM,
     Wmv,
+    Avi,
     Other
 }
 
@@ -26,14 +28,44 @@ impl RsVideoFormat {
             Self::Mkv
         } else if filename.ends_with(".mp4") {
             Self::Mp4
-        } else if filename.ends_with(".av1") {
-            Self::Av1
+        } else if filename.ends_with(".m4v") {
+            Self::M4v
+        } else if filename.ends_with(".mov") {
+            Self::Mov
         } else if filename.ends_with(".webm") {
             Self::WebM
         } else if filename.ends_with(".wmv") {
             Self::Wmv
+        } else if filename.ends_with(".avi") {
+            Self::Avi
         } else {
             Self::Other
+        }
+    }
+
+    pub fn as_mime(&self) -> &str {
+        match self {
+            RsVideoFormat::Mp4 => "video/mp4",
+            RsVideoFormat::M4v => "video/x-m4v",
+            RsVideoFormat::Mov => "video/quicktime",
+            RsVideoFormat::Mkv => "application/x-matroska",
+            RsVideoFormat::WebM => "video/webm",
+            RsVideoFormat::Wmv => "video/x-ms-wmv",
+            RsVideoFormat::Avi => "video/x-msvideo",
+            RsVideoFormat::Other => "application/octet-stream",
+        }
+    }
+    pub fn from_mime(mime: &str) -> Option<Self> {
+        match mime {
+            "video/mp4" => Some(RsVideoFormat::Mp4),
+            "video/x-m4v" => Some(RsVideoFormat::M4v),
+            "video/quicktime" => Some(RsVideoFormat::Mov),
+            "application/x-matroska" => Some(RsVideoFormat::Mkv),
+            "video/webm" => Some(RsVideoFormat::WebM),
+            "video/x-ms-wmv" => Some(RsVideoFormat::Wmv),
+            "video/x-msvideo" => Some(RsVideoFormat::Avi),
+            "application/octet-stream" => Some(RsVideoFormat::Other),
+            _ => None
         }
     }
 }

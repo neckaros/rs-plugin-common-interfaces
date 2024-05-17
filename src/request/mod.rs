@@ -196,6 +196,8 @@ pub enum RsRequestStatus {
     /// No plugin yet processed this request
     #[default]
 	Unprocessed,
+    /// All plugin processed but with no result
+    Processed,
     ///if remain in this state after all plugin it will go through YtDl to try to extract medias
     NeedParsing,
     /// Link can be processed but first need to be added to the service and downloaded

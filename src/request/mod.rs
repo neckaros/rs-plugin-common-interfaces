@@ -187,6 +187,14 @@ impl RsRequest {
         }
  
     }
+
+    pub fn parse_subfilenames(&mut self) {
+        if let Some(ref mut files) = self.files {
+            for file in files {
+                file.parse_filename();
+            }
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
@@ -262,6 +270,33 @@ pub struct RsRequestFiles {
     pub audio: Option<Vec<RsAudio>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quality: Option<u64>,
+}
+
+impl RsRequestFiles {
+    pub fn parse_filename(&mut self) {
+        let resolution = RsResolution::from_filename(&self.name);
+        if resolution != RsResolution::Unknown {
+            self.resolution = Some(resolution);
+        }
+        let video_format = RsVideoFormat::from_filename(&self.name);
+        if video_format != RsVideoFormat::Other {
+            self.video_format = Some(video_format);
+        }
+        let videocodec = RsVideoCodec::from_filename(&self.name);
+        if videocodec != RsVideoCodec::Unknown {
+            self.videocodec = Some(videocodec);
+        }
+        let audio = RsAudio::list_from_filename(&self.name);
+        if !audio.is_empty() {
+            self.audio = Some(audio);
+        }
+
+        let re = Regex::new(r"(?i)s(\d+)e(\d+)").unwrap();
+        if let Some(caps) = re.captures(&self.name) {
+            self.season = caps[1].parse::<u32>().ok();
+            self.episode = caps[2].parse::<u32>().ok();
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]

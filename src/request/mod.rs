@@ -236,7 +236,32 @@ pub enum RsRequestMethod {
 pub struct RsRequestFiles {
     pub name: String,
     pub size: u64,
+    
     pub mime: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub albums: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub season: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub episode: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub language: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolution: Option<RsResolution>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub video_format: Option<RsVideoFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub videocodec: Option<RsVideoCodec>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub audio: Option<Vec<RsAudio>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quality: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]

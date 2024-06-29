@@ -2,8 +2,8 @@
 // exists(path: RsProviderPath) -> bool;
 // remove(path: RsProviderPath) -> bool;
 // infos(path: RsProviderPath) -> MediaForUpdate;
-// get_file(path: RsProviderPath) -> RsRequest;
-// add_file(path: RsProviderPath) -> RsRequest;
+// get(path: RsProviderPath) -> RsRequest;
+// add(path: RsProviderAddRequest) -> RsRequest;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,4 +14,12 @@ pub struct RsProviderPath {
     pub root: String,
     pub source: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsProviderAddRequest {
+    pub path: RsProviderPath,
+    pub overwrite: bool,
+}
+
 

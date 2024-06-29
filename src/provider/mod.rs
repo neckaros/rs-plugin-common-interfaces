@@ -1,7 +1,19 @@
 // Your plugin must implement:
-// exists(root: String, source: &str) -> bool;
-// remove(root: String, name: &str) -> bool;
-// infos(root: String, source: &str) -> MediaForUpdate;
-// get_file(root: String, source: &str, range: Option<RangeDefinition>) -> RsRequest;
-// get_file_write_stream(root: String, name: &str) -> RsRequest;
+// exists(path: RsProviderPath) -> bool;
+// remove(path: RsProviderPath) -> bool;
+// infos(path: RsProviderPath) -> MediaForUpdate;
+// get_file(path: RsProviderPath) -> RsRequest;
+// get_file_write_stream(path: RsProviderPath) -> RsRequest;
+
+use serde::{Deserialize, Serialize};
+
+use crate::RsRangeDefinition;
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsProviderPath {
+    pub root: String,
+    pub source: String,
+    pub range: Option<RsRangeDefinition>
+}
 

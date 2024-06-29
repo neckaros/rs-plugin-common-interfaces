@@ -23,6 +23,19 @@ pub mod domain;
 
 pub const INTERFACE_VERSION: u16 = 1;
 
+#[derive(Debug, Serialize, Deserialize, Clone , PartialEq)]
+pub struct RsRangeDefinition {
+    pub start: Option<u64>,
+    pub end: Option<u64>
+}
+
+impl RsRangeDefinition {
+    pub fn header(&self) -> (String, String) {
+        let value = format!("bytes={}-{}", self.start.map(|s| s.to_string()).unwrap_or("".to_string()), self.end.map(|s| s.to_string()).unwrap_or("".to_string()));
+        ("range".to_string(),value)
+    }
+}
+
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 

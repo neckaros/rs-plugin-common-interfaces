@@ -99,6 +99,8 @@ pub struct RsRequest {
     #[serde(default)]
     pub status: RsRequestStatus,
 
+    pub support_range: bool,
+
     /// If true this request can be saved for later use and will remain valid
     /// If Permanent is true but status is intermediate the process will go through request plugins to try to get a permanant link
     #[serde(default)]

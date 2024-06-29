@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsProviderPath {
-    pub root: String,
+    pub root: Option<String>,
     pub source: String,
 }
 

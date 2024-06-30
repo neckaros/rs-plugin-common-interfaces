@@ -69,7 +69,7 @@ pub enum PluginType {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase", tag = "type")] 
 #[strum(serialize_all = "camelCase")]
 pub enum CredentialType {
 	Url,

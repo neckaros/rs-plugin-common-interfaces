@@ -147,6 +147,9 @@ pub struct RsRequest {
     pub audio: Option<Vec<RsAudio>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quality: Option<u64>,
+
+    #[serde(default)]
+    pub ignore_origin_duplicate: bool,
 }
 
 impl RsRequest {

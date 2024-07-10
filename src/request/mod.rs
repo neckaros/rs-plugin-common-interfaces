@@ -175,6 +175,14 @@ impl RsRequest {
                     .filter(|s| !s.is_empty())
                     .map(|s| s.to_string())
             })
+            .and_then(|potential| {
+                let extension = potential.split('.').map(|t| t.to_string()).collect::<Vec<String>>();
+                if extension.len() > 1 && extension.last().unwrap_or(&"".to_string()).len() > 2 &&  extension.last().unwrap_or(&"".to_string()).len() < 5{
+                    Some(potential)
+                } else {
+                    None
+                }
+            })
         }
         
     }
@@ -378,7 +386,11 @@ mod tests {
         let req = RsRequest {url: "http://www.test.com/filename.mp4?toto=3".to_string(), filename: Some("test.mkv".to_owned()), ..Default::default()};
         assert_eq!(req.filename_or_extract_from_url(), Some("test.mkv".to_string()));
         let req = RsRequest {url: "http://www.test.com/filename.mp4?toto=3".to_string(), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), Some("filename.mp4".to_string()));
+        assert_eq!(req.filename_or_extract_from_url(), Some("filename.mp4".to_string()), "We are expecting a filename from the url");
+        let req = RsRequest {url: "http://www.test.com/notfilename?toto=3".to_string(), ..Default::default()};
+        assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as there is no filename with extensiopn in url");
+        let req = RsRequest {url: "http://www.test.com/notfilename.toolong?toto=3".to_string(), ..Default::default()};
+        assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as too long after dot is not an extension");
         Ok(())
     }
 

@@ -163,6 +163,22 @@ impl RsRequest {
         self.headers = Some(existing);
     }
 
+    pub fn filename_or_extract_from_url(&self) -> Option<String> {
+        if self.filename.is_some() {
+            self.filename.clone()
+        } else {
+            self.url.split('/')
+            .last()
+            .and_then(|segment| {
+                segment.split('?')
+                    .next()
+                    .filter(|s| !s.is_empty())
+                    .map(|s| s.to_string())
+            })
+        }
+        
+    }
+
     pub fn parse_filename(&mut self) {
         if let Some(filename) = &self.filename {
             let resolution = RsResolution::from_filename(filename);
@@ -356,6 +372,16 @@ mod tests {
         assert!(parsed.netscape() == ".twitter.com\tTRUE\t/\tTRUE\t1726506480\tads_prefs\t\"HBESAAA=\"");
         Ok(())
     }
+
+    #[test]
+    fn test_parse_filename() -> Result<(), RequestError> {
+        let req = RsRequest {url: "http://www.test.com/filename.mp4?toto=3".to_string(), filename: Some("test.mkv".to_owned()), ..Default::default()};
+        assert_eq!(req.filename_or_extract_from_url(), Some("test.mkv".to_string()));
+        let req = RsRequest {url: "http://www.test.com/filename.mp4?toto=3".to_string(), ..Default::default()};
+        assert_eq!(req.filename_or_extract_from_url(), Some("filename.mp4".to_string()));
+        Ok(())
+    }
+
 
     #[test]
     fn test_header() -> Result<(), RequestError> {

@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use strum_macros::EnumString;
 
 #[cfg(feature = "rusqlite")]

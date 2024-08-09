@@ -127,6 +127,7 @@ pub enum MediaType {
 pub struct RsPluginRequest<T> {
     pub request: T,
     pub plugin_settings: Value,
+    pub credential: Option<PluginCredential>
 }
 
 

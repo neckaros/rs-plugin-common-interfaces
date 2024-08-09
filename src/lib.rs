@@ -121,6 +121,17 @@ pub enum MediaType {
 }
 
 
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsPluginRequest<T> {
+    pub request: T,
+    pub plugin_settings: Value,
+}
+
+
+
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;

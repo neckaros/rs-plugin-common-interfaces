@@ -34,11 +34,3 @@ pub enum RsLinkType {
     Other,
 }
 
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
-pub struct RsPluginRequest<T> {
-    pub request: T,
-    pub plugin_settings: Value,
-}
-

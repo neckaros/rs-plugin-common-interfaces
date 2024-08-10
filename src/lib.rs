@@ -105,6 +105,18 @@ pub struct PluginCredential {
     pub expires: Option<u64>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[strum(serialize_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
+pub enum RsFileType {
+    Directory,
+    Photo,
+    Video,
+    Archive,
+    Album,
+    #[default]
+    Other
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
 #[serde(rename_all = "camelCase")] 

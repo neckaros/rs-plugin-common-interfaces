@@ -7,6 +7,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::RsFileType;
+
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 
@@ -22,4 +24,16 @@ pub struct RsProviderAddRequest {
     pub overwrite: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsProviderEntry {
+    pub source: String,
+    pub kind: RsFileType,
+    pub size: Option<u64>,
 
+    pub hash: Option<String>,
+
+    pub added: Option<u64>,
+    pub modified: Option<u64>,
+    pub created: Option<i64>,
+}

@@ -20,7 +20,8 @@ pub struct RsProviderPath {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsProviderAddRequest {
-    pub name: RsProviderPath,
+    pub root: String,
+    pub name: String,
     pub overwrite: bool,
 }
 

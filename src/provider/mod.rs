@@ -28,7 +28,7 @@ pub struct RsProviderAddRequest {
 #[serde(rename_all = "camelCase")] 
 pub struct RsProviderAddResponse {
     pub request: RsRequest,
-    pub multipart: String,
+    pub multipart: Option<String>,
     pub source: Option<String>,
     pub packets: Option<u64>
 }

@@ -38,7 +38,7 @@ pub struct RsProviderAddResponse {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
 #[strum(serialize_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
-pub enum RsEntryType {
+pub enum RsProviderEntryType {
     Directory,
     File,
     #[default]
@@ -49,7 +49,7 @@ pub enum RsEntryType {
 #[serde(rename_all = "camelCase")] 
 pub struct RsProviderEntry {
     pub source: String,
-    pub kind: RsEntryType,
+    pub kind: RsProviderEntryType,
     pub size: Option<u64>,
     pub mimetype: String,
 

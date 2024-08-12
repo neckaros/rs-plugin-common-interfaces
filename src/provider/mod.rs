@@ -51,11 +51,17 @@ pub struct RsProviderEntry {
     pub source: String,
     pub kind: RsProviderEntryType,
     pub size: Option<u64>,
-    pub mimetype: String,
+    pub mimetype: Option<String>,
 
     pub hash: Option<String>,
 
     pub added: Option<u64>,
     pub modified: Option<u64>,
     pub created: Option<i64>,
+}
+
+impl RsProviderEntry {
+    pub fn mime_or_default(&self) -> String {
+        self.mimetype.clone().unwrap_or("application/octet-stream".to_string())
+    }
 }

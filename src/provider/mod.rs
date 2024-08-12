@@ -6,6 +6,7 @@
 // add(path: RsProviderAddRequest) -> RsRequest;
 
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 
 use crate::{RsFileType, RsRequest};
 
@@ -34,13 +35,23 @@ pub struct RsProviderAddResponse {
     pub packets: Option<u64>
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[strum(serialize_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
+pub enum RsEntryType {
+    Directory,
+    File,
+    #[default]
+    Other
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsProviderEntry {
     pub source: String,
-    pub kind: RsFileType,
+    pub kind: RsEntryType,
     pub size: Option<u64>,
+    pub mimetype: String,
 
     pub hash: Option<String>,
 

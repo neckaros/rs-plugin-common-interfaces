@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
-use crate::{RsFileType, RsRequest};
+use crate::RsRequest;
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

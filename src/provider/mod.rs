@@ -55,8 +55,8 @@ pub struct RsProviderEntry {
 
     pub hash: Option<String>,
 
-    pub added: Option<u64>,
-    pub modified: Option<u64>,
+    pub added: Option<i64>,
+    pub modified: Option<i64>,
     pub created: Option<i64>,
 }
 

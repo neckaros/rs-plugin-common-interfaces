@@ -52,6 +52,15 @@ pub struct PluginInformation {
     pub interface_version: u16,
 }
 
+impl PluginInformation {
+    pub fn capabilities_tostring(&self) -> String {
+        self.capabilities.iter()
+        .map(|plugin| plugin.to_string())
+        .collect::<Vec<_>>()
+        .join(", ")
+    }
+}
+
 
 
 
@@ -90,7 +99,7 @@ pub enum CustomParamTypes {
     Url(Option<String>),
     Integer(Option<i64>),
     UInteger(Option<u64>),
-    Float(Option<i64>),
+    Float(Option<f64>),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -102,7 +111,7 @@ pub struct PluginCredential {
     pub settings: Value,
     pub user_ref: Option<String>,
     pub refresh_token: Option<String>,
-    pub expires: Option<u64>,
+    pub expires: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]

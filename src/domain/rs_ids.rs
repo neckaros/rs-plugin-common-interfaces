@@ -191,6 +191,15 @@ impl TryFrom<Vec<String>> for RsIds {
     }
 }
 
+impl TryFrom<String> for RsIds {
+    type Error = RsIdsError;
+    fn try_from(value: String) -> Result<Self, RsIdsError> {
+        let mut id = RsIds::default();
+        id.try_add(value)?;
+        Ok(id)
+    }
+}
+
 impl From<RsIds> for Vec<String> {
     
     fn from(value: RsIds) -> Self {

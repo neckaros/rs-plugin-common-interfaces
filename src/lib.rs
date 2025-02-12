@@ -2,10 +2,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use strum_macros::EnumString;
 
-pub use domain::element_type::ElementType;
+pub use domain::{element_type::ElementType, external_images::{ExternalImage, ImageType}};
 pub use request::{RsRequest, RsCookie, RsCookies, RsRequestFiles, RsRequestPluginRequest, RsRequestStatus};
 pub use url::{RsLink, RsLinkType};
-pub use lookup::{RsLookupEpisode, RsLookupMovie, RsLookupSourceResult, RsLookupWrapper};
+pub use lookup::{RsLookupEpisode, RsLookup, RsLookupSourceResult, RsLookupWrapper};
 
 pub use video::{RsAudio, RsResolution, RsVideoCodec, RsVideoFormat};
 

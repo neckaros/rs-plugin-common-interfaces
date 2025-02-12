@@ -18,42 +18,25 @@ pub enum RsLookupSourceResult {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupEpisode {
-    pub serie: String,
-    pub imdb: Option<String>,
-    pub slug: Option<String>,
-    pub tmdb: Option<u64>,
-    pub trakt: Option<u64>,
-    pub tvdb: Option<u64>,
-    pub otherids: Option<String>,
-
     pub season: u32,
     pub number: Option<u32>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
-pub struct RsLookupMovie {
-    pub name: String,
-    pub imdb: Option<String>,
-    pub slug: Option<String>,
-    pub tmdb: Option<u64>,
-    pub trakt: Option<u64>,
-    pub otherids: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
-pub struct RsLookup {
+pub struct RsLookup<T> {
     pub kind: ElementType,
     pub name: String,
-    pub ids: RsIds
+    pub ids: RsIds,
+
+    pub infos: T
 }
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 
-pub struct RsLookupWrapper {
-    pub query: RsLookup,
+pub struct RsLookupWrapper<T> {
+    pub query: RsLookup<T>,
     pub credential: Option<PluginCredential>,
     pub params: Option<HashMap<String, String>>
 

@@ -29,7 +29,7 @@ pub struct RsLookup<T> {
     pub name: String,
     pub ids: RsIds,
 
-    pub infos: T
+    pub infos: Option<T>
 }
 
 

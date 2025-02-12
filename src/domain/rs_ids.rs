@@ -117,6 +117,11 @@ impl RsIds {
     pub fn as_trakt(&self) -> Option<String> {
         self.trakt.map(|i| format!("trakt:{}", i))
     }
+    pub fn as_id_for_trakt(&self) -> Option<String> {
+        if let Some(trakt) = self.trakt {
+            Some(trakt.to_string())
+        } else { self.imdb.as_ref().map(|imdb| imdb.to_string()) }
+    }
 
     pub fn from_tvdb(tvdb: u64) -> Self {
         Self {
@@ -127,6 +132,9 @@ impl RsIds {
     pub fn as_tvdb(&self) -> Option<String> {
         self.tvdb.map(|i| format!("tvdb:{}", i))
     }
+    pub fn try_tvdb(self) -> Result<u64, RsIdsError> {
+        self.tvdb.ok_or(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
+    }
 
     pub fn from_tmdb(tmdb: u64) -> Self {
         Self {
@@ -136,6 +144,9 @@ impl RsIds {
     }
     pub fn as_tmdb(&self) -> Option<String> {
         self.tmdb.map(|i| format!("tmdb:{}", i))
+    }
+    pub fn try_tmdb(self) -> Result<u64, RsIdsError> {
+        self.tmdb.ok_or(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
     }
 
     pub fn from_redseat(redseat: String) -> Self {
@@ -168,6 +179,41 @@ impl RsIds {
     }
 }
 
+impl TryFrom<Vec<String>> for RsIds {
+    type Error = RsIdsError;
+    
+    fn try_from(values: Vec<String>) -> Result<Self, RsIdsError> {
+        let mut ids = Self::default();
+        for value in values {
+            ids.try_add(value)?;
+        }
+        Ok(ids)
+    }
+}
+
+impl From<RsIds> for Vec<String> {
+    
+    fn from(value: RsIds) -> Self {
+        let mut ids = vec![];
+        if let Some(id) = value.as_redseat() {
+            ids.push(id)
+        }
+        if let Some(id) = value.as_imdb() {
+            ids.push(id)
+        }
+        if let Some(id) = value.as_tmdb() {
+            ids.push(id.to_string())
+        }
+        if let Some(id) = value.as_trakt() {
+            ids.push(id.to_string())
+        }
+        if let Some(id) = value.as_tvdb() {
+            ids.push(id.to_string())
+        }
+        ids
+    }
+}
+
 
 #[cfg(feature = "rusqlite")]
 pub mod external_images_rusqlite {
@@ -190,5 +236,8 @@ pub mod external_images_rusqlite {
             Ok(ToSqlOutput::from(r))
         }
     }
+
+
+    
   
 }

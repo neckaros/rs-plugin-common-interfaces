@@ -15,6 +15,19 @@ pub enum ImageType {
     Custom(String)
 }
 
+impl ImageType {
+    pub fn to_filename_element(&self) -> String {
+        format!(".{}", self.to_string())
+    }
+    pub fn optional_to_filename_element(optinal: &Option<Self>) -> String {
+        match optinal {
+            Some(kind) => kind.to_filename_element(),
+            None => "".to_string(),
+        }
+        
+    }
+}
+
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]

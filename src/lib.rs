@@ -5,7 +5,7 @@ use strum_macros::EnumString;
 pub use domain::element_type::ElementType;
 pub use request::{RsRequest, RsCookie, RsCookies, RsRequestFiles, RsRequestPluginRequest, RsRequestStatus};
 pub use url::{RsLink, RsLinkType};
-pub use lookup::{RsLookupEpisode, RsLookupMovie, RsLookupQuery, RsLookupSourceResult, RsLookupWrapper};
+pub use lookup::{RsLookupEpisode, RsLookupMovie, RsLookupSourceResult, RsLookupWrapper};
 
 pub use video::{RsAudio, RsResolution, RsVideoCodec, RsVideoFormat};
 

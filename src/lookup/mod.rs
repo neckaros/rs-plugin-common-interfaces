@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::request::RsRequest;
-use crate::PluginCredential;
+use crate::{domain::rs_ids::RsIds, request::RsRequest};
+use crate::{ElementType, PluginCredential};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
@@ -41,20 +41,22 @@ pub struct RsLookupMovie {
     pub otherids: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsLookup {
+    pub kind: ElementType,
+    pub name: String,
+    pub ids: RsIds
+}
+
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupWrapper {
-    pub query: RsLookupQuery,
+    pub query: RsLookup,
     pub credential: Option<PluginCredential>,
     pub params: Option<HashMap<String, String>>
 
 }
 
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString)]
-#[serde(rename_all = "camelCase")] 
-#[strum(serialize_all = "camelCase")]
-pub enum RsLookupQuery {
-    Episode(RsLookupEpisode),
-    Movie(RsLookupMovie),
-}

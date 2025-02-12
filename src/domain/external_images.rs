@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
-use strum_macros::Display;
+use strum_macros::{Display, EnumString};
 
 
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Display)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Display, EnumString)]
 #[serde(rename_all = "camelCase")]
 pub enum ImageType {
     Poster,
@@ -56,7 +56,7 @@ pub mod external_images_rusqlite {
     impl FromSql for ImageType {
         fn column_result(value: ValueRef) -> FromSqlResult<Self> {
             String::column_result(value).and_then(|as_string| {
-                ElementType::from_str(&as_string).map_err(|_| FromSqlError::InvalidType)
+                ImageType::from_str(&as_string).map_err(|_| FromSqlError::InvalidType)
             })
         }
     }

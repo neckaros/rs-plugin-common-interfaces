@@ -250,3 +250,21 @@ pub mod external_images_rusqlite {
     
   
 }
+
+
+
+#[cfg(test)]
+mod tests {
+
+    use self::RsIdsError;
+
+    use super::*;
+
+    #[test]
+    fn test_parse() -> Result<(), RsIdsError> {
+        let toparse = String::from("trakt:905982");
+        let parsed: Result<RsIds, _> = toparse.try_into();
+        assert!(parsed.is_ok() == true);
+        Ok(())
+    }
+}

@@ -52,7 +52,7 @@ impl RsIds {
         }
         let elements = value.split(":").collect::<Vec<_>>();
         let source = elements.first().ok_or(RsIdsError::InvalidId())?;
-        let id = elements.get(2).ok_or(RsIdsError::InvalidId())?;
+        let id = elements.get(1).ok_or(RsIdsError::InvalidId())?;
 
         if *source == "redseat" {
             self.redseat = Some(id.to_string());
@@ -265,6 +265,7 @@ mod tests {
         let toparse = String::from("trakt:905982");
         let parsed: Result<RsIds, _> = toparse.try_into();
         assert!(parsed.is_ok() == true);
+        assert!(parsed.unwrap().trakt == Some(905982));
         Ok(())
     }
 }

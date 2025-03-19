@@ -141,6 +141,20 @@ pub enum MediaType {
     Unknown,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum Gender {
+	Male,
+	Female,
+    Animal,
+    Other,
+    #[strum(default)]
+    Custom(String),
+    #[default]
+    Unknown,
+}
+
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]

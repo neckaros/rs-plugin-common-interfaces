@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
@@ -33,3 +35,42 @@ pub enum RsLinkType {
     Other,
 }
 
+
+
+impl From<(String, String)> for RsLink {
+    fn from((platform, id): (String, String)) -> Self {       
+        RsLink {
+            platform,
+            kind: None,
+            id,
+            file: None,
+            user: None,
+            plugin: None,
+        }
+    }
+}
+
+pub trait ToRsLinks {
+    fn to_rs_links(self) -> Vec<RsLink>;
+}
+
+// Implement for HashMap
+impl ToRsLinks for HashMap<String, Option<String>> {
+    fn to_rs_links(self) -> Vec<RsLink> {
+        self.into_iter()
+            .filter_map(|(platform, opt_id)| {
+                opt_id.map(|id| RsLink::from((platform, id)))
+            })
+            .collect()
+    }
+}
+
+// Optional implementation for Option<HashMap>
+impl ToRsLinks for Option<HashMap<String, Option<String>>> {
+    fn to_rs_links(self) -> Vec<RsLink> {
+        match self {
+            Some(map) => map.to_rs_links(),
+            None => Vec::new(),
+        }
+    }
+}

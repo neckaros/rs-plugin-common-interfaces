@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
-use crate::{CredentialType, MediaType, PluginType, RsAudio, RsResolution, RsVideoCodec, RsVideoFormat};
+use crate::{CredentialType, Gender, MediaType, PluginType, RsAudio, RsResolution, RsVideoCodec, RsVideoFormat};
 
 impl FromSql for PluginType {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -123,6 +123,24 @@ impl FromSql for MediaType {
 
 
 impl ToSql for MediaType {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
+        let l = &self.clone();
+        let r = l.to_string();
+        Ok(ToSqlOutput::from(r))
+    }
+}
+
+impl FromSql for Gender {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).and_then(|as_string| {
+            let r = Gender::from_str(&as_string).map_err(|_| FromSqlError::InvalidType);
+            r
+        })
+    }
+}
+
+
+impl ToSql for Gender {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
         let l = &self.clone();
         let r = l.to_string();

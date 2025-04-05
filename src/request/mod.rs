@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use regex::Regex;
 use serde_json::Value;
+use urlencoding::decode;
 use crate::{PluginCredential, RsVideoFormat};
 use crate::{RsAudio, RsResolution, RsVideoCodec};
 use serde::{Deserialize, Serialize};
@@ -178,7 +179,8 @@ impl RsRequest {
             .and_then(|potential| {
                 let extension = potential.split('.').map(|t| t.to_string()).collect::<Vec<String>>();
                 if extension.len() > 1 && extension.last().unwrap_or(&"".to_string()).len() > 2 &&  extension.last().unwrap_or(&"".to_string()).len() < 5{
-                    Some(potential)
+                    let decoded = decode(&potential).map(|x| x.into_owned()).unwrap_or(potential); // Decodes the URL
+                    Some(decoded)
                 } else {
                     None
                 }
@@ -391,6 +393,8 @@ mod tests {
         assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as there is no filename with extensiopn in url");
         let req = RsRequest {url: "http://www.test.com/notfilename.toolong?toto=3".to_string(), ..Default::default()};
         assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as too long after dot is not an extension");
+        let req = RsRequest {url: "http://www.test.com/filename%20test.mp4?toto=3".to_string(), filename: Some("test.mkv".to_owned()), ..Default::default()};
+        assert_eq!(req.filename_or_extract_from_url(), Some("filename test.mp4".to_string()));
         Ok(())
     }
 

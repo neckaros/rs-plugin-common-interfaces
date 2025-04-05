@@ -1,6 +1,6 @@
 [package]
 name = "rs-plugin-common-interfaces"
-version = "0.18.2"
+version = "0.18.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["arnaud jezequel"]
@@ -18,3 +18,4 @@ strum = "0.26.2"
 strum_macros = "0.26.2"
 rusqlite = { version = "0.31", optional = true }
 regex = "1.10.4"
+urlencoding = "2.1.3"

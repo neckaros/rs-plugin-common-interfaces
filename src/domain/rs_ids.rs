@@ -226,7 +226,6 @@ impl From<RsIds> for Vec<String> {
 
 #[cfg(feature = "rusqlite")]
 pub mod external_images_rusqlite {
-    use std::str::FromStr;
     use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
     use super::RsIds;

@@ -114,10 +114,12 @@ pub enum RsVideoCodec {
 impl RsVideoCodec {
     pub fn from_filename(filename: &str) -> Self {
         let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") || text_contains(&modified_filename, "h265") {
+        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") || text_contains(&modified_filename, "h265")  || text_contains(&modified_filename, "h.265") {
             RsVideoCodec::H265
         } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") || text_contains(&modified_filename, "x.264")  || text_contains(&modified_filename, "x264"){
             RsVideoCodec::H264
+        } else if text_contains(&modified_filename, "av1"){
+            RsVideoCodec::AV1
         } else {
             RsVideoCodec::Unknown
         }
@@ -152,7 +154,7 @@ impl RsAudio {
         let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "atmos") {
             RsAudio::Atmos
-        } else if text_contains(&modified_filename, "ddp5.1") {
+        } else if text_contains(&modified_filename, "ddp5.1") || text_contains(&modified_filename, "ddp51") || text_contains(&modified_filename, "dolby.digital.plus.5.1") || text_contains(&modified_filename, "dd51") {
             RsAudio::DDP51
         } else if text_contains(&modified_filename, "dtshd") {
             RsAudio::DTSHD

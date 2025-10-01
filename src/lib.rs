@@ -43,6 +43,7 @@ pub struct PluginInformation {
     pub publisher: String,
     pub description: String,
     pub credential_kind: Option<CredentialType>,
+    pub repo: Option<String>,
     pub oauth_url: Option<String>,
     pub version: u16,
     

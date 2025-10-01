@@ -105,6 +105,7 @@ pub enum RsVideoCodec {
 	H265,
     H264,
     AV1,
+    XVID,
     #[strum(default)]
     Custom(String),
     #[default]
@@ -120,6 +121,8 @@ impl RsVideoCodec {
             RsVideoCodec::H264
         } else if text_contains(&modified_filename, "av1"){
             RsVideoCodec::AV1
+        } else if text_contains(&modified_filename, "xvid"){
+            RsVideoCodec::XVID
         } else {
             RsVideoCodec::Unknown
         }
@@ -140,6 +143,8 @@ pub enum RsAudio {
     DTS,
     #[strum(serialize = "AC35.1")]
     AC351,
+    #[strum(serialize = "AAC5.1")]
+    AAC51,
     AAC,
     MP3,
     #[strum(default)]
@@ -164,6 +169,12 @@ impl RsAudio {
             RsAudio::DTS
         } else if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
             RsAudio::AC351
+        } else if text_contains(&modified_filename, "aac5.1") || text_contains(&modified_filename, "aac51") {
+            RsAudio::AAC51
+        } else if text_contains(&modified_filename, "aac") {
+            RsAudio::AAC
+        } else if text_contains(&modified_filename, "mp3") {
+            RsAudio::MP3
         } else {
             RsAudio::Unknown
         }

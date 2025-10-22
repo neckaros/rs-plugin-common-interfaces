@@ -343,9 +343,17 @@ pub struct VideoConvertRequest {
 pub struct RsVideoTranscodeJob {
     pub source: RsRequest,
     pub request: VideoConvertRequest,
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsVideoTranscodeJobStatus {
+    pub id: String,
     pub status: RsVideoTranscodeStatus,
     pub progress: f32,
 }
+
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, strum_macros::EnumString, Default)]
 #[serde(rename_all = "lowercase")] 
@@ -359,4 +367,24 @@ pub enum RsVideoTranscodeStatus {
     Completed,
     Failed,
     Canceled,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsVideoCapabilities {
+    pub video_codecs: Vec<RsVideoCodec>,
+    pub audio_codecs: Vec<RsAudio>,
+    pub video_formats: Vec<RsVideoFormat>,
+    pub max_duration: Option<u32>,
+    pub mac_concurrent_jobs: Option<u16>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, strum_macros::EnumString, Default)]
+#[serde(rename_all = "lowercase")] 
+#[strum(serialize_all = "lowercase")]
+pub enum RsVideoTranscodeCancelResponse {
+    #[default]
+    NotFound,
+	Cancelled,
+    Error,
 }

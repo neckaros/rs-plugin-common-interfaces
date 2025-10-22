@@ -79,6 +79,13 @@ pub enum PluginType {
     Other,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsRemainingCredits {
+    pub number: u64,
+    pub unit: String,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
 #[serde(rename_all = "camelCase", tag = "type")] 
 #[strum(serialize_all = "camelCase")]

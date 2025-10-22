@@ -74,6 +74,7 @@ pub enum PluginType {
     Request,
     Lookup,
     Provider,
+    VideoConvert,
     #[default]
     Other,
 }

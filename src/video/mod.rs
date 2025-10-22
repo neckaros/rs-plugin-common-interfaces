@@ -276,10 +276,10 @@ impl VideoOverlayPosition {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 pub struct VideoConvertInterval {
-    start: f64,
-    duration: Option<f64>,
+    pub start: f64,
+    pub duration: Option<f64>,
     /// will default to current input
-    input: Option<String>,
+    pub input: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]

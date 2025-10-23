@@ -385,6 +385,7 @@ pub enum RsVideoTranscodeStatus {
 #[serde(rename_all = "camelCase")] 
 pub struct RsVideoCapabilities {
     pub video_codecs: Vec<RsVideoCodec>,
+    pub video_codecs_hw: Vec<RsVideoCodec>,
     pub audio_codecs: Vec<RsAudio>,
     pub video_formats: Vec<RsVideoFormat>,
     pub max_duration: Option<u32>,

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
-use crate::RsRequest;
+use crate::{PluginCredential, RsRequest};
 
 #[cfg(feature = "rusqlite")]
 pub mod rusqlite;
@@ -344,7 +344,19 @@ pub struct RsVideoTranscodeJob {
     pub source: RsRequest,
     pub request: VideoConvertRequest,
 }
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsVideoTranscodeJobPluginRequest {
+    pub job: RsVideoTranscodeJob,
+    pub credentials: PluginCredential,
+}
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsVideoTranscodeJobPluginAction {
+    pub job_id: String,
+    pub credentials: PluginCredential,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
@@ -376,7 +388,7 @@ pub struct RsVideoCapabilities {
     pub audio_codecs: Vec<RsAudio>,
     pub video_formats: Vec<RsVideoFormat>,
     pub max_duration: Option<u32>,
-    pub mac_concurrent_jobs: Option<u16>,
+    pub max_concurrent_jobs: Option<u16>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, strum_macros::EnumString, Default)]

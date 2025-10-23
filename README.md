@@ -6,16 +6,16 @@ If you are building a RedSeat Plugin with Rust Include this cargo package in you
 
 ## Video Transcoding
 Get capabilities:
-`get_convert_capabilities()` => `RsVideoCapabilities`
+`get_convert_capabilities(PluginCredential)` => `RsVideoCapabilities`
 
 Get remaining credits (optional):
 `get_credits()` => `RsRemainingCredits`
 
 Start conversion:
-`convert(job: RsVideoTranscodeJob)` => `RsVideoTranscodeJob`
+`convert(job: RsVideoTranscodeJobPluginRequest)` => `RsVideoTranscodeJob`
 
 Get conversion status:
-`convert(jobId: String)` => `RsVideoTranscodeJob`
+`convert_status(jobId: RsVideoTranscodeJobPluginAction)` => `RsVideoTranscodeJob`
 
 Cancel job:
-`convert(jobId: String)` => `RsVideoTranscodeCancelResponse`
+`convert_cancel(jobId: RsVideoTranscodeJobPluginAction)` => `RsVideoTranscodeCancelResponse`

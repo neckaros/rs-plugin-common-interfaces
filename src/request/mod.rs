@@ -137,6 +137,8 @@ pub struct RsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub episode: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub movie: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolution: Option<RsResolution>,

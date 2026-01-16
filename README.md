@@ -17,5 +17,10 @@ Start conversion:
 Get conversion status:
 `convert_status(jobId: RsVideoTranscodeJobPluginAction)` => `RsVideoTranscodeJob`
 
+
+Get download request:
+`convert_link(jobId: RsVideoTranscodeJobPluginAction)` => `RsRequest`
+
+
 Cancel job:
 `convert_cancel(jobId: RsVideoTranscodeJobPluginAction)` => `RsVideoTranscodeCancelResponse`

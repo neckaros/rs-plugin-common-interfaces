@@ -3,7 +3,7 @@ use std::str::FromStr;
 use regex::Regex;
 use serde_json::Value;
 use urlencoding::decode;
-use crate::{PluginCredential, RsVideoFormat};
+use crate::{PluginCredential, RsFileType, RsVideoFormat};
 use crate::{RsAudio, RsResolution, RsVideoCodec};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
@@ -151,6 +151,24 @@ pub struct RsRequest {
 
     #[serde(default)]
     pub ignore_origin_duplicate: bool,
+
+    // Download-specific fields
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thumbnail_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub origin_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<RsFileType>,
+
+    // Lookup fields (text to search in database, NOT IDs)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags_lookup: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people_lookup: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub albums_lookup: Option<Vec<String>>,
 }
 
 impl RsRequest {
@@ -299,6 +317,14 @@ pub struct RsRequestFiles {
     pub audio: Option<Vec<RsAudio>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quality: Option<u64>,
+
+    // Lookup fields (text to search in database, NOT IDs)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags_lookup: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people_lookup: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub albums_lookup: Option<Vec<String>>,
 }
 
 impl RsRequestFiles {
@@ -329,10 +355,26 @@ impl RsRequestFiles {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsRequestPluginRequest {
     pub request: RsRequest,
     pub credential: Option<PluginCredential>,
+}
+
+/// Groups multiple download requests together, optionally combining them into a single media item
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsGroupDownload {
+    /// If true, all requests will be grouped into a single media item (album)
+    #[serde(default)]
+    pub group: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_thumbnail_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_filename: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_mime: Option<String>,
+    pub requests: Vec<RsRequest>,
 }
 
 
@@ -393,8 +435,8 @@ mod tests {
         assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as there is no filename with extensiopn in url");
         let req = RsRequest {url: "http://www.test.com/notfilename.toolong?toto=3".to_string(), ..Default::default()};
         assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as too long after dot is not an extension");
-        let req = RsRequest {url: "http://www.test.com/filename%20test.mp4?toto=3".to_string(), filename: Some("test.mkv".to_owned()), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), Some("filename test.mp4".to_string()));
+        let req = RsRequest {url: "http://www.test.com/filename%20test.mp4?toto=3".to_string(), ..Default::default()};
+        assert_eq!(req.filename_or_extract_from_url(), Some("filename test.mp4".to_string()), "Should decode URL-encoded filename");
         Ok(())
     }
 

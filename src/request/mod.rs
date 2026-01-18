@@ -104,9 +104,9 @@ pub struct RsRequest {
     /// If Permanent is true but status is intermediate the process will go through request plugins to try to get a permanant link
     #[serde(default)]
     pub permanent: bool,
-    /// Can be played/downloaded instantly (streamable link, no need to add to service first)
-    #[serde(default)]
-    pub instant: bool,
+    /// If true can be played/downloaded instantly (streamable link, no need to add to service first)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub instant: Option<bool>,
     
     pub json_body: Option<Value>,
     #[serde(default)]

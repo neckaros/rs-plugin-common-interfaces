@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use regex::Regex;
 use serde_json::Value;
@@ -104,6 +104,9 @@ pub struct RsRequest {
     /// If Permanent is true but status is intermediate the process will go through request plugins to try to get a permanant link
     #[serde(default)]
     pub permanent: bool,
+    /// Can be played/downloaded instantly (streamable link, no need to add to service first)
+    #[serde(default)]
+    pub instant: bool,
     
     pub json_body: Option<Value>,
     #[serde(default)]
@@ -361,6 +364,7 @@ impl RsRequestFiles {
 pub struct RsRequestPluginRequest {
     pub request: RsRequest,
     pub credential: Option<PluginCredential>,
+    pub params: Option<HashMap<String, String>>,
 }
 
 /// Groups multiple download requests together, optionally combining them into a single media item

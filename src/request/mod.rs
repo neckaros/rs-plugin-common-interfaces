@@ -383,7 +383,65 @@ pub struct RsGroupDownload {
     pub requests: Vec<RsRequest>,
 }
 
+/// Status of a processing task added via request_add
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
+#[serde(rename_all = "camelCase")]
+#[strum(serialize_all = "camelCase")]
+pub enum RsProcessingStatus {
+    #[default]
+    Pending,
+    Processing,
+    Finished,
+    Error,
+    Paused,
+}
 
+/// Response from request_add plugin method
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsRequestAddResponse {
+    /// Processing ID returned by the plugin service
+    pub processing_id: String,
+    /// Initial status
+    #[serde(default)]
+    pub status: RsProcessingStatus,
+    /// UTC timestamp (milliseconds) for estimated completion
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eta: Option<i64>,
+}
+
+/// Response from get_progress plugin method
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsProcessingProgress {
+    /// Processing ID
+    pub processing_id: String,
+    /// Progress percentage (0-100)
+    pub progress: u32,
+    /// Current status
+    pub status: RsProcessingStatus,
+    /// Error message if status is Error
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    /// UTC timestamp (milliseconds) for estimated completion - can be updated
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eta: Option<i64>,
+    /// Updated request with final URL when finished
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request: Option<Box<RsRequest>>,
+}
+
+/// Request for pause/remove/get_progress plugin methods
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsProcessingActionRequest {
+    /// Processing ID to act on
+    pub processing_id: String,
+    /// Credential for the plugin
+    pub credential: Option<PluginCredential>,
+    /// Optional params
+    pub params: Option<HashMap<String, String>>,
+}
 
 #[cfg(test)]
 mod tests {

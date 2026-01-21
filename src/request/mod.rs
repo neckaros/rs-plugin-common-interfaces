@@ -99,6 +99,10 @@ pub struct RsRequest {
     pub filename: Option<String>,
     #[serde(default)]
     pub status: RsRequestStatus,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub plugin_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub plugin_name: Option<String>,
 
     /// If true this request can be saved for later use and will remain valid
     /// If Permanent is true but status is intermediate the process will go through request plugins to try to get a permanant link

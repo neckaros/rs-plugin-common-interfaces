@@ -12,6 +12,8 @@ pub mod movie;
 pub mod person;
 pub mod backup;
 
+#[cfg(feature = "rusqlite")]
+pub mod rusqlite;
 
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

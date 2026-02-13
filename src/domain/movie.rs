@@ -79,42 +79,6 @@ pub struct Movie {
 }
 
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MovieForUpdate {
-    pub name: Option<String>,
-    #[serde(rename = "type")]
-    pub kind: Option<Value>,
-    pub year: Option<u32>,
-    pub airdate: Option<i64>,
-    pub digitalairdate: Option<i64>,
-
-    pub duration: Option<u64>,
-    pub overview: Option<String>,
-    pub country: Option<String>,
-    pub status: Option<MovieStatus>,
-
-    pub imdb: Option<String>,
-    pub slug: Option<String>,
-    pub tmdb: Option<u64>,
-    pub trakt: Option<u64>,
-    pub otherids: Option<String>,
-
-    pub lang: Option<String>,
-    pub original: Option<String>,
-    #[serde(rename = "imdb_rating")]
-    pub imdb_rating: Option<f32>,
-    #[serde(rename = "imdb_votes")]
-    pub imdb_votes: Option<u64>,
-    #[serde(rename = "trakt_rating")]
-    pub trakt_rating: Option<f32>,
-    #[serde(rename = "trakt_votes")]
-    pub trakt_votes: Option<u32>,
-    pub trailer: Option<RsLink>,
-
-}
-
-
 impl From<Movie> for RsIds {
     fn from(value: Movie) -> Self {
         RsIds {

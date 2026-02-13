@@ -409,7 +409,7 @@ pub struct RsRequestAddResponse {
     /// Initial status
     #[serde(default)]
     pub status: RsProcessingStatus,
-    /// UTC timestamp (milliseconds) for estimated completion
+    /// Relative ETA in milliseconds until completion (host converts to absolute timestamp)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub eta: Option<i64>,
 }
@@ -427,7 +427,7 @@ pub struct RsProcessingProgress {
     /// Error message if status is Error
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
-    /// UTC timestamp (milliseconds) for estimated completion - can be updated
+    /// Relative ETA in milliseconds until completion (host converts to absolute timestamp)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub eta: Option<i64>,
     /// Updated request with final URL when finished

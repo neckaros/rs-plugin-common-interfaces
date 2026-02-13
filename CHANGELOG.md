@@ -1,0 +1,33 @@
+# Changelog
+
+## [0.22.0] - 2026-02-13
+
+- Extended `RsIds` with optional books/manga fields:
+  - `isbn13: Option<String>`
+  - `openlibrary_edition_id: Option<String>`
+  - `openlibrary_work_id: Option<String>`
+  - `google_books_volume_id: Option<String>`
+  - `anilist_manga_id: Option<u64>`
+  - `mangadex_manga_uuid: Option<String>`
+  - `myanimelist_manga_id: Option<u64>`
+  - `asin: Option<String>`
+- Added canonical short output prefixes for new IDs:
+  - `isbn13`
+  - `oleid`
+  - `olwid`
+  - `gbvid`
+  - `anilist`
+  - `mangadex`
+  - `mal`
+  - `asin`
+- Added accepted aliases in parsing:
+  - `openlibrary_edition_id` -> `oleid`
+  - `openlibrary_work_id` -> `olwid`
+  - `google_books_volume_id` -> `gbvid`
+  - `anilist_manga_id` -> `anilist`
+  - `mangadex_manga_uuid` -> `mangadex`
+  - `myanimelist_manga_id` -> `mal`
+- Parsing is now case-insensitive for ID sources.
+- `anilist` and `mal` values are validated as `u64`.
+- Updated best-external selection fallback order to include the new book/manga IDs after `trakt`, `imdb`, `tmdb`, `tvdb`.
+- Fixed `as_id()` `tvdb` formatting to emit `tvdb:<id>` instead of `tmdb:<id>`.

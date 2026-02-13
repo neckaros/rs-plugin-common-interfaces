@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::domain::rs_ids::RsIds;
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Book {
@@ -44,4 +46,20 @@ pub struct Book {
     pub modified: u64,
     #[serde(default)]
     pub added: u64,
+}
+
+impl From<Book> for RsIds {
+    fn from(value: Book) -> Self {
+        RsIds {
+            redseat: Some(value.id),
+            isbn13: value.isbn13,
+            openlibrary_edition_id: value.openlibrary_edition_id,
+            openlibrary_work_id: value.openlibrary_work_id,
+            google_books_volume_id: value.google_books_volume_id,
+            asin: value.asin,
+            volume: value.volume,
+            chapter: value.chapter,
+            ..Default::default()
+        }
+    }
 }

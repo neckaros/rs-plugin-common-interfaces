@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use serde::{Deserialize, Serialize};
 
 
@@ -22,7 +24,7 @@ impl core::fmt::Display for RsIdsError {
 
 impl std::error::Error for RsIdsError {}
 
-#[derive(Debug, Clone, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RsIds {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,19 +58,203 @@ pub struct RsIds {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub myanimelist_manga_id: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub volume: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chapter: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub asin: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
+enum RsDecimalKey {
+    NegInf,
+    Finite(i64),
+    PosInf,
+    NaN(u64),
+}
+
+fn normalize_manga_decimal(value: f64) -> f64 {
+    (value * 1000.0).round() / 1000.0
+}
+
+fn decimal_key(value: f64) -> RsDecimalKey {
+    if value.is_nan() {
+        return RsDecimalKey::NaN(value.to_bits());
+    }
+    if value == f64::INFINITY {
+        return RsDecimalKey::PosInf;
+    }
+    if value == f64::NEG_INFINITY {
+        return RsDecimalKey::NegInf;
+    }
+    RsDecimalKey::Finite((normalize_manga_decimal(value) * 1000.0).round() as i64)
+}
+
+fn optional_decimal_key(value: Option<f64>) -> Option<RsDecimalKey> {
+    value.map(decimal_key)
+}
+
+impl PartialEq for RsIds {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
+
+impl Eq for RsIds {}
+
+impl PartialOrd for RsIds {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for RsIds {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let ord = self.redseat.cmp(&other.redseat);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.trakt.cmp(&other.trakt);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.slug.cmp(&other.slug);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.tvdb.cmp(&other.tvdb);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.imdb.cmp(&other.imdb);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.tmdb.cmp(&other.tmdb);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.tvrage.cmp(&other.tvrage);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.other_ids.cmp(&other.other_ids);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.isbn13.cmp(&other.isbn13);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.openlibrary_edition_id.cmp(&other.openlibrary_edition_id);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.openlibrary_work_id.cmp(&other.openlibrary_work_id);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.google_books_volume_id.cmp(&other.google_books_volume_id);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.anilist_manga_id.cmp(&other.anilist_manga_id);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.mangadex_manga_uuid.cmp(&other.mangadex_manga_uuid);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = self.myanimelist_manga_id.cmp(&other.myanimelist_manga_id);
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = optional_decimal_key(self.volume).cmp(&optional_decimal_key(other.volume));
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        let ord = optional_decimal_key(self.chapter).cmp(&optional_decimal_key(other.chapter));
+        if ord != Ordering::Equal {
+            return ord;
+        }
+        self.asin.cmp(&other.asin)
+    }
 }
 
 
 
 impl RsIds {
+    fn parse_manga_details(details: &[&str], value: &str) -> Result<(Option<f64>, Option<f64>), RsIdsError> {
+        let mut volume = None;
+        let mut chapter = None;
+
+        for detail in details {
+            let detail_parts = detail.split(':').collect::<Vec<_>>();
+            if detail_parts.len() != 2 {
+                return Err(RsIdsError::NotAMediaId(value.to_string()));
+            }
+            let key = detail_parts[0].to_lowercase();
+            let parsed_value: f64 = detail_parts[1]
+                .parse()
+                .map_err(|_| RsIdsError::NotAMediaId(value.to_string()))?;
+            if !parsed_value.is_finite() {
+                return Err(RsIdsError::NotAMediaId(value.to_string()));
+            }
+            let parsed_value = normalize_manga_decimal(parsed_value);
+            match key.as_str() {
+                "volume" => {
+                    if volume.is_some() {
+                        return Err(RsIdsError::NotAMediaId(value.to_string()));
+                    }
+                    volume = Some(parsed_value);
+                }
+                "chapter" => {
+                    if chapter.is_some() {
+                        return Err(RsIdsError::NotAMediaId(value.to_string()));
+                    }
+                    chapter = Some(parsed_value);
+                }
+                _ => return Err(RsIdsError::NotAMediaId(value.to_string())),
+            }
+        }
+
+        Ok((volume, chapter))
+    }
+
+    fn manga_details_suffix(&self) -> String {
+        let mut suffix = String::new();
+        if let Some(volume) = self.volume {
+            suffix.push_str(&format!("|volume:{}", normalize_manga_decimal(volume)));
+        }
+        if let Some(chapter) = self.chapter {
+            suffix.push_str(&format!("|chapter:{}", normalize_manga_decimal(chapter)));
+        }
+        suffix
+    }
+
     pub fn try_add(&mut self, value: String) -> Result<(), RsIdsError> {
         if !Self::is_id(&value) {
             return Err(RsIdsError::NotAMediaId(value))
         }
-        let elements = value.split(":").collect::<Vec<_>>();
+        let pipe_elements = value.split('|').collect::<Vec<_>>();
+        let base = pipe_elements.first().ok_or(RsIdsError::InvalidId())?;
+        let details = &pipe_elements[1..];
+        let elements = base.split(':').collect::<Vec<_>>();
         let source = elements.first().ok_or(RsIdsError::InvalidId())?.to_lowercase();
         let id = elements.get(1).ok_or(RsIdsError::InvalidId())?;
+        let is_manga_source = matches!(
+            source.as_str(),
+            "anilist"
+                | "anilist_manga_id"
+                | "mangadex"
+                | "mangadex_manga_uuid"
+                | "mal"
+                | "myanimelist_manga_id"
+        );
+        if !is_manga_source && !details.is_empty() {
+            return Err(RsIdsError::NotAMediaId(value));
+        }
 
         match source.as_str() {
             "redseat" => {
@@ -116,24 +302,33 @@ impl RsIds {
                 Ok(())
             }
             "anilist" | "anilist_manga_id" => {
+                let (volume, chapter) = Self::parse_manga_details(details, &value)?;
                 let id: u64 = id.parse().map_err(|_| RsIdsError::NotAMediaId(value))?;
                 self.anilist_manga_id = Some(id);
+                self.volume = volume;
+                self.chapter = chapter;
                 Ok(())
             }
             "mangadex" | "mangadex_manga_uuid" => {
+                let (volume, chapter) = Self::parse_manga_details(details, &value)?;
                 self.mangadex_manga_uuid = Some(id.to_string());
+                self.volume = volume;
+                self.chapter = chapter;
                 Ok(())
             }
             "mal" | "myanimelist_manga_id" => {
+                let (volume, chapter) = Self::parse_manga_details(details, &value)?;
                 let id: u64 = id.parse().map_err(|_| RsIdsError::NotAMediaId(value))?;
                 self.myanimelist_manga_id = Some(id);
+                self.volume = volume;
+                self.chapter = chapter;
                 Ok(())
             }
             "asin" => {
                 self.asin = Some(id.to_string());
                 Ok(())
             }
-            _ => Err(RsIdsError::NotAMediaId(value))
+            _ => Err(RsIdsError::NotAMediaId(value)),
         }
     }
 
@@ -251,11 +446,24 @@ impl RsIds {
     pub fn as_anilist_manga_id(&self) -> Option<String> {
         self.anilist_manga_id.map(|i| format!("anilist:{}", i))
     }
+    pub fn as_anilist_manga_id_with_details(&self) -> Option<String> {
+        self.anilist_manga_id
+            .map(|i| format!("anilist:{}{}", i, self.manga_details_suffix()))
+    }
     pub fn as_mangadex_manga_uuid(&self) -> Option<String> {
         self.mangadex_manga_uuid.as_ref().map(|i| format!("mangadex:{}", i))
     }
+    pub fn as_mangadex_manga_uuid_with_details(&self) -> Option<String> {
+        self.mangadex_manga_uuid
+            .as_ref()
+            .map(|i| format!("mangadex:{}{}", i, self.manga_details_suffix()))
+    }
     pub fn as_myanimelist_manga_id(&self) -> Option<String> {
         self.myanimelist_manga_id.map(|i| format!("mal:{}", i))
+    }
+    pub fn as_myanimelist_manga_id_with_details(&self) -> Option<String> {
+        self.myanimelist_manga_id
+            .map(|i| format!("mal:{}{}", i, self.manga_details_suffix()))
     }
     pub fn as_asin(&self) -> Option<String> {
         self.asin.as_ref().map(|i| format!("asin:{}", i))
@@ -277,7 +485,8 @@ impl RsIds {
 
     /// check if the provided id need parsing like "trakt:xxxxx" and is not directly the local id from this server
     pub fn is_id(id: &str) -> bool {
-        id.contains(":") && id.split(":").count() == 2
+        let base = id.split('|').next().unwrap_or(id);
+        base.contains(":") && base.split(':').count() == 2
     }
 }
 
@@ -333,13 +542,13 @@ impl From<RsIds> for Vec<String> {
         if let Some(id) = value.as_google_books_volume_id() {
             ids.push(id)
         }
-        if let Some(id) = value.as_anilist_manga_id() {
+        if let Some(id) = value.as_anilist_manga_id_with_details() {
             ids.push(id)
         }
-        if let Some(id) = value.as_mangadex_manga_uuid() {
+        if let Some(id) = value.as_mangadex_manga_uuid_with_details() {
             ids.push(id)
         }
-        if let Some(id) = value.as_myanimelist_manga_id() {
+        if let Some(id) = value.as_myanimelist_manga_id_with_details() {
             ids.push(id)
         }
         if let Some(id) = value.as_asin() {
@@ -429,6 +638,26 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_manga_pipe_details() -> Result<(), RsIdsError> {
+        let mut ids = RsIds::default();
+        ids.try_add("anilist:123|volume:1|chapter:2.5".to_string())?;
+        assert_eq!(ids.anilist_manga_id, Some(123));
+        assert_eq!(ids.volume, Some(1.0));
+        assert_eq!(ids.chapter, Some(2.5));
+
+        ids.try_add("mal:456|chapter:10.5".to_string())?;
+        assert_eq!(ids.myanimelist_manga_id, Some(456));
+        assert_eq!(ids.volume, None);
+        assert_eq!(ids.chapter, Some(10.5));
+
+        ids.try_add("mangadex:uuid-1|volume:3".to_string())?;
+        assert_eq!(ids.mangadex_manga_uuid.as_deref(), Some("uuid-1"));
+        assert_eq!(ids.volume, Some(3.0));
+        assert_eq!(ids.chapter, None);
+        Ok(())
+    }
+
+    #[test]
     fn test_parse_long_aliases() -> Result<(), RsIdsError> {
         let mut ids = RsIds::default();
         ids.try_add("openlibrary_edition_id:OL1M".to_string())?;
@@ -463,6 +692,34 @@ mod tests {
     }
 
     #[test]
+    fn test_manga_with_details_methods_keep_base_as_methods() {
+        let ids = RsIds {
+            anilist_manga_id: Some(123),
+            myanimelist_manga_id: Some(456),
+            mangadex_manga_uuid: Some("uuid-2".to_string()),
+            volume: Some(1.0),
+            chapter: Some(2.0),
+            ..Default::default()
+        };
+
+        assert_eq!(ids.as_anilist_manga_id(), Some("anilist:123".to_string()));
+        assert_eq!(ids.as_myanimelist_manga_id(), Some("mal:456".to_string()));
+        assert_eq!(ids.as_mangadex_manga_uuid(), Some("mangadex:uuid-2".to_string()));
+        assert_eq!(
+            ids.as_anilist_manga_id_with_details(),
+            Some("anilist:123|volume:1|chapter:2".to_string())
+        );
+        assert_eq!(
+            ids.as_myanimelist_manga_id_with_details(),
+            Some("mal:456|volume:1|chapter:2".to_string())
+        );
+        assert_eq!(
+            ids.as_mangadex_manga_uuid_with_details(),
+            Some("mangadex:uuid-2|volume:1|chapter:2".to_string())
+        );
+    }
+
+    #[test]
     fn test_numeric_parse_failure_for_anilist_and_mal() {
         let mut ids = RsIds::default();
         assert!(matches!(
@@ -471,6 +728,36 @@ mod tests {
         ));
         assert!(matches!(
             ids.try_add("myanimelist_manga_id:bad".to_string()),
+            Err(RsIdsError::NotAMediaId(_))
+        ));
+    }
+
+    #[test]
+    fn test_parse_failure_for_invalid_manga_pipe_details() {
+        let mut ids = RsIds::default();
+        assert!(matches!(
+            ids.try_add("anilist:123|volume".to_string()),
+            Err(RsIdsError::NotAMediaId(_))
+        ));
+        assert!(matches!(
+            ids.try_add("anilist:123|arc:1".to_string()),
+            Err(RsIdsError::NotAMediaId(_))
+        ));
+        assert!(matches!(
+            ids.try_add("mal:456|chapter:abc".to_string()),
+            Err(RsIdsError::NotAMediaId(_))
+        ));
+        assert!(matches!(
+            ids.try_add("mangadex:uuid|chapter:1|chapter:2".to_string()),
+            Err(RsIdsError::NotAMediaId(_))
+        ));
+    }
+
+    #[test]
+    fn test_parse_failure_for_non_manga_pipe_details() {
+        let mut ids = RsIds::default();
+        assert!(matches!(
+            ids.try_add("imdb:tt1234567|chapter:1".to_string()),
             Err(RsIdsError::NotAMediaId(_))
         ));
     }
@@ -498,6 +785,18 @@ mod tests {
         assert!(output.contains(&"mal:1111".to_string()));
         assert!(output.contains(&"isbn13:9780316769488".to_string()));
         assert!(output.contains(&"asin:B012345678".to_string()));
+        Ok(())
+    }
+
+    #[test]
+    fn test_roundtrip_vec_rsids_vec_uses_pipe_format_for_manga_details() -> Result<(), RsIdsError> {
+        let input = vec![
+            "anilist:999|chapter:2|volume:1".to_string(),
+        ];
+        let ids = RsIds::try_from(input)?;
+        let output: Vec<String> = ids.into();
+
+        assert!(output.contains(&"anilist:999|volume:1|chapter:2".to_string()));
         Ok(())
     }
 

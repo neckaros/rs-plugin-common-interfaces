@@ -10,6 +10,8 @@
   - `anilist_manga_id: Option<u64>`
   - `mangadex_manga_uuid: Option<String>`
   - `myanimelist_manga_id: Option<u64>`
+  - `volume: Option<f64>`
+  - `chapter: Option<f64>`
   - `asin: Option<String>`
 - Added canonical short output prefixes for new IDs:
   - `isbn13`
@@ -29,5 +31,13 @@
   - `myanimelist_manga_id` -> `mal`
 - Parsing is now case-insensitive for ID sources.
 - `anilist` and `mal` values are validated as `u64`.
+- Added pipe-suffix chapter/volume parsing for manga providers:
+  - `anilist:<id>|volume:<v>|chapter:<c>`
+  - `mal:<id>|volume:<v>|chapter:<c>`
+  - `mangadex:<id>|volume:<v>|chapter:<c>`
+- Added detailed output helpers while keeping existing base `as_*` methods unchanged:
+  - `as_anilist_manga_id_with_details()`
+  - `as_myanimelist_manga_id_with_details()`
+  - `as_mangadex_manga_uuid_with_details()`
 - Updated best-external selection fallback order to include the new book/manga IDs after `trakt`, `imdb`, `tmdb`, `tvdb`.
 - Fixed `as_id()` `tvdb` formatting to emit `tvdb:<id>` instead of `tmdb:<id>`.

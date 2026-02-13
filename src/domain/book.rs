@@ -4,6 +4,8 @@ use serde_json::Value;
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Book {
+    #[serde(default)]
+    pub id: String,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "type")]

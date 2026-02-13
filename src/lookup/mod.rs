@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::domain::book::Book;
 use crate::{domain::rs_ids::RsIds, request::RsRequest};
 use crate::PluginCredential;
 use serde::{Deserialize, Serialize};
@@ -92,6 +93,14 @@ pub enum RsLookupQuery {
     SerieSeason(RsLookupSerieSeason),
     Song(RsLookupSong)
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString)]
+#[serde(rename_all = "camelCase")] 
+#[strum(serialize_all = "camelCase")]
+pub enum RsLookupMetadataResult {
+    Book(Book)
+}
+
 
 
 

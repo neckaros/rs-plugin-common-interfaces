@@ -73,6 +73,7 @@ pub enum PluginType {
     UrlParser,
     Request,
     Lookup,
+    LookupMetdata,
     Provider,
     VideoConvert,
     #[default]

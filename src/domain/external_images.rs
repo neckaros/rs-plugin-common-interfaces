@@ -17,7 +17,7 @@ pub enum ImageType {
 
 impl ImageType {
     pub fn to_filename_element(&self) -> String {
-        format!(".{}", self.to_string())
+        format!(".{}", self)
     }
     pub fn optional_to_filename_element(optinal: &Option<Self>) -> String {
         match optinal {

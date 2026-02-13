@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
 use crate::domain::book::Book;
+use crate::domain::episode::Episode;
+use crate::domain::media::Media;
+use crate::domain::movie::Movie;
+use crate::domain::person::Person;
+use crate::domain::serie::Serie;
 use crate::{domain::rs_ids::RsIds, request::RsRequest};
 use crate::PluginCredential;
 use serde::{Deserialize, Serialize};
@@ -94,14 +99,24 @@ pub enum RsLookupQuery {
     Song(RsLookupSong)
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString)]
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
 pub enum RsLookupMetadataResult {
-    Book(Book)
+    Book(Book),
+    Media(Media),
+    Episode(Episode),
+    Movie(Movie),
+    Person(Person),
+    Serie(Serie),
 }
 
-
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")] 
+pub struct RsLookupMetadataResultWithImages{
+    pub metadata: RsLookupMetadataResult,
+    pub images: Vec<crate::domain::external_images::ExternalImage>,
+}
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

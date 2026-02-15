@@ -25,7 +25,7 @@ pub enum RsLookupSourceResult {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupPerson {
-    pub name: String,
+    pub name: Option<String>,
     pub ids: Option<RsIds>
 }
 
@@ -33,21 +33,21 @@ pub struct RsLookupPerson {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupSerie {
-    pub name: String,
+    pub name: Option<String>,
     pub ids: Option<RsIds>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupSerieSeason {
-    pub name: String,
+    pub name: Option<String>,
     pub ids: Option<RsIds>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupEpisode {
-    pub serie: String,
+    pub name: Option<String>,
     pub ids: Option<RsIds>,
 
     pub season: u32,
@@ -57,14 +57,13 @@ pub struct RsLookupEpisode {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupBook {
-    pub title: String,
-    pub author: String,
+    pub name: Option<String>,
     pub ids: Option<RsIds>
 }
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupSong {
-    pub title: String,
+    pub title: Option<String>,
     pub author: Option<String>,
     pub album: Option<String>,
     pub ids: Option<RsIds>
@@ -73,14 +72,14 @@ pub struct RsLookupSong {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupMedia {
-    pub search: String,
+    pub search: Option<String>,
     pub ids: Option<RsIds>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupMovie {
-    pub name: String,
+    pub name: Option<String>,
     pub ids: Option<RsIds>
 }
 

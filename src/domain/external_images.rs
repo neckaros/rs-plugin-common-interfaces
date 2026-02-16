@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
+use crate::RsRequest;
+
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Display, EnumString)]
@@ -34,7 +36,7 @@ impl ImageType {
 pub struct ExternalImage {
     #[serde(rename = "type")]
     pub kind: Option<ImageType>,
-    pub url: String,
+    pub url: RsRequest,
     pub aspect_ratio: Option<f64>,
     pub height: Option<i64>,
     pub lang: Option<String>,

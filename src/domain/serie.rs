@@ -4,6 +4,63 @@ use strum_macros::{Display, EnumString};
 
 use crate::domain::{rs_ids::RsIds, tools::rating_serializer};
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Display, EnumString)]
+#[serde(from = "String", into = "String")]
+#[strum(serialize_all = "snake_case")]
+pub enum SerieType {
+    Tv,
+    TvShort,
+    TvSpecial,
+    Manga,
+    Anime,
+    Movie,
+    Special,
+    Ova,
+    Ona,
+    Music,
+    Novel,
+    OneShot,
+    LightNovel,
+    Doujinshi,
+    Manhwa,
+    Manhua,
+    Oel,
+    Cm,
+    Pv,
+    Book,
+    #[strum(default)]
+    Custom(String),
+}
+
+impl SerieType {
+    pub fn from_string(value: &str) -> Self {
+        let normalized = value.to_ascii_lowercase();
+        match SerieType::try_from(normalized.as_str()) {
+            Ok(SerieType::Custom(_)) => SerieType::Custom(value.to_string()),
+            Ok(parsed) => parsed,
+            Err(_) => SerieType::Custom(value.to_string()),
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        match self {
+            SerieType::Custom(value) => value.clone(),
+            _ => format!("{}", self),
+        }
+    }
+}
+
+impl From<String> for SerieType {
+    fn from(value: String) -> Self {
+        SerieType::from_string(&value)
+    }
+}
+
+impl From<SerieType> for String {
+    fn from(value: SerieType) -> Self {
+        value.to_string()
+    }
+}
 
 #[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone, Display, EnumString)]
 #[serde(rename_all = "camelCase")]
@@ -33,7 +90,7 @@ pub struct Serie {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "type")]
-    pub kind: Option<String>,
+    pub kind: Option<SerieType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alt: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -98,5 +155,35 @@ impl From<Serie> for RsIds {
             other_ids: None,
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SerieType;
+
+    #[test]
+    fn serie_type_serde() {
+        let known: SerieType = serde_json::from_str("\"tv\"").unwrap();
+        assert_eq!(known, SerieType::Tv);
+        let known_snake_case: SerieType = serde_json::from_str("\"one_shot\"").unwrap();
+        assert_eq!(known_snake_case, SerieType::OneShot);
+        let known_case_insensitive: SerieType = serde_json::from_str("\"TV_SPECIAL\"").unwrap();
+        assert_eq!(known_case_insensitive, SerieType::TvSpecial);
+
+        let custom: SerieType = serde_json::from_str("\"manhwa\"").unwrap();
+        assert_eq!(custom, SerieType::Manhwa);
+        let custom: SerieType = serde_json::from_str("\"webtoon\"").unwrap();
+        assert_eq!(custom, SerieType::Custom("webtoon".to_string()));
+
+        assert_eq!(serde_json::to_string(&SerieType::Anime).unwrap(), "\"anime\"");
+        assert_eq!(
+            serde_json::to_string(&SerieType::Custom("lightnovel".to_string())).unwrap(),
+            "\"lightnovel\""
+        );
+        assert_eq!(
+            serde_json::to_string(&SerieType::LightNovel).unwrap(),
+            "\"light_novel\""
+        );
     }
 }

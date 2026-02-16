@@ -1,6 +1,6 @@
 use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
-use super::serie::SerieStatus;
+use super::serie::{SerieStatus, SerieType};
 use super::media::{FileType, RsGpsPosition};
 use super::movie::MovieStatus;
 
@@ -13,6 +13,18 @@ impl FromSql for SerieStatus {
 }
 
 impl ToSql for SerieStatus {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
+        Ok(ToSqlOutput::from(self.to_string()))
+    }
+}
+
+impl FromSql for SerieType {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).map(SerieType::from)
+    }
+}
+
+impl ToSql for SerieType {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
         Ok(ToSqlOutput::from(self.to_string()))
     }

@@ -115,6 +115,8 @@ pub enum RsLookupMetadataResult {
 pub struct RsLookupMetadataResultWithImages{
     pub metadata: RsLookupMetadataResult,
     pub images: Vec<crate::domain::external_images::ExternalImage>,
+    pub lookup_tags: Option<Vec<String>>,
+    pub lookup_people: Option<Vec<String>>
 }
 
 

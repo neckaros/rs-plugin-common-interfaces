@@ -98,7 +98,7 @@ pub enum RsLookupQuery {
     Song(RsLookupSong)
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
 #[serde(rename_all = "camelCase")] 
 #[strum(serialize_all = "camelCase")]
 pub enum RsLookupMetadataResult {
@@ -108,9 +108,11 @@ pub enum RsLookupMetadataResult {
     Movie(Movie),
     Person(Person),
     Serie(Serie),
+    #[default]
+    None
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")] 
 pub struct RsLookupMetadataResultWithImages{
     pub metadata: RsLookupMetadataResult,

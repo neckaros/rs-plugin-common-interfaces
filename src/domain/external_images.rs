@@ -31,7 +31,7 @@ impl ImageType {
 }
 
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ExternalImage {
     #[serde(rename = "type")]

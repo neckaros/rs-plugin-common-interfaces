@@ -44,8 +44,27 @@ impl SerieType {
 
     pub fn to_string(&self) -> String {
         match self {
+            SerieType::Tv => "tv".to_string(),
+            SerieType::TvShort => "tv_short".to_string(),
+            SerieType::TvSpecial => "tv_special".to_string(),
+            SerieType::Manga => "manga".to_string(),
+            SerieType::Anime => "anime".to_string(),
+            SerieType::Movie => "movie".to_string(),
+            SerieType::Special => "special".to_string(),
+            SerieType::Ova => "ova".to_string(),
+            SerieType::Ona => "ona".to_string(),
+            SerieType::Music => "music".to_string(),
+            SerieType::Novel => "novel".to_string(),
+            SerieType::OneShot => "one_shot".to_string(),
+            SerieType::LightNovel => "light_novel".to_string(),
+            SerieType::Doujinshi => "doujinshi".to_string(),
+            SerieType::Manhwa => "manhwa".to_string(),
+            SerieType::Manhua => "manhua".to_string(),
+            SerieType::Oel => "oel".to_string(),
+            SerieType::Cm => "cm".to_string(),
+            SerieType::Pv => "pv".to_string(),
+            SerieType::Book => "book".to_string(),
             SerieType::Custom(value) => value.clone(),
-            _ => format!("{}", self),
         }
     }
 }

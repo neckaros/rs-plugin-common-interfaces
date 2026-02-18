@@ -114,6 +114,7 @@ pub enum FileType {
     Video,
     Archive,
     Album,
+    Book,
     #[default]
     Other,
 }

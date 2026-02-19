@@ -365,6 +365,7 @@ impl RsIds {
             .or(self.as_mangadex_manga_uuid())
             .or(self.as_myanimelist_manga_id())
             .or(self.as_asin())
+            .or(self.other_ids.and_then(|other_ids| other_ids.as_slice().first().cloned()))
     }
     pub fn as_best_external(&self) -> Option<String> {
         self.as_trakt()
@@ -379,6 +380,7 @@ impl RsIds {
             .or(self.as_mangadex_manga_uuid())
             .or(self.as_myanimelist_manga_id())
             .or(self.as_asin())
+            .or(self.other_ids.as_ref().and_then(|other_ids| other_ids.as_slice().first().cloned()))
     }
 
     pub fn into_best_external_or_local(self) -> Option<String> {
@@ -509,6 +511,57 @@ impl RsIds {
         }
     }
 
+    pub fn as_all_other_ids(&self) -> OtherIds {
+        let mut ids = vec![];
+        if let Some(id) = self.as_redseat() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_imdb() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_tmdb() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_trakt() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_tvdb() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_isbn13() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_openlibrary_edition_id() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_openlibrary_work_id() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_google_books_volume_id() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_anilist_manga_id_with_details() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_mangadex_manga_uuid_with_details() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_myanimelist_manga_id_with_details() {
+            ids.push(id)
+        }
+        if let Some(id) = self.as_asin() {
+            ids.push(id)
+        }
+        if let Some(other_ids) = self.other_ids.as_ref() {
+            ids.extend(other_ids.as_slice().iter().cloned());
+        }
+        OtherIds(ids)
+    }
+
+    pub fn as_all_ids(&self) -> Vec<String> {
+        self.as_all_other_ids().into_vec()
+    }
+
     pub fn add_other(&mut self, key: &str, value: &str) {
         if key.trim().is_empty() {
             return;
@@ -555,6 +608,14 @@ impl TryFrom<Vec<String>> for RsIds {
     }
 }
 
+impl TryFrom<OtherIds> for RsIds {
+    type Error = RsIdsError;
+
+    fn try_from(value: OtherIds) -> Result<Self, RsIdsError> {
+        Self::try_from(value.into_vec())
+    }
+}
+
 impl TryFrom<String> for RsIds {
     type Error = RsIdsError;
     fn try_from(value: String) -> Result<Self, RsIdsError> {
@@ -566,50 +627,7 @@ impl TryFrom<String> for RsIds {
 
 impl From<RsIds> for Vec<String> {
     fn from(value: RsIds) -> Self {
-        let mut ids = vec![];
-        if let Some(id) = value.as_redseat() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_imdb() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_tmdb() {
-            ids.push(id.to_string())
-        }
-        if let Some(id) = value.as_trakt() {
-            ids.push(id.to_string())
-        }
-        if let Some(id) = value.as_tvdb() {
-            ids.push(id.to_string())
-        }
-        if let Some(id) = value.as_isbn13() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_openlibrary_edition_id() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_openlibrary_work_id() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_google_books_volume_id() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_anilist_manga_id_with_details() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_mangadex_manga_uuid_with_details() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_myanimelist_manga_id_with_details() {
-            ids.push(id)
-        }
-        if let Some(id) = value.as_asin() {
-            ids.push(id)
-        }
-        if let Some(other_ids) = value.other_ids {
-            ids.extend(other_ids.into_vec());
-        }
-        ids
+        value.as_all_ids()
     }
 }
 
@@ -891,6 +909,33 @@ mod tests {
     }
 
     #[test]
+    fn test_as_all_other_ids_and_as_all_ids_return_all_set_ids() {
+        let ids = RsIds {
+            redseat: Some("rs-1".to_string()),
+            imdb: Some("tt1234567".to_string()),
+            anilist_manga_id: Some(9),
+            volume: Some(1.0),
+            chapter: Some(2.5),
+            other_ids: Some(OtherIds(vec![
+                "custom:abc".to_string(),
+                "foo:bar".to_string(),
+            ])),
+            ..Default::default()
+        };
+
+        let expected = vec![
+            "redseat:rs-1".to_string(),
+            "imdb:tt1234567".to_string(),
+            "anilist:9|volume:1|chapter:2.5".to_string(),
+            "custom:abc".to_string(),
+            "foo:bar".to_string(),
+        ];
+
+        assert_eq!(ids.as_all_other_ids(), OtherIds(expected.clone()));
+        assert_eq!(ids.as_all_ids(), expected);
+    }
+
+    #[test]
     fn test_best_external_selection_for_book_ids_only() {
         let ids = RsIds {
             isbn13: Some("9780131103627".to_string()),
@@ -923,6 +968,21 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(ids.as_best_external(), Some("anilist:12".to_string()));
+    }
+
+    #[test]
+    fn test_try_from_other_ids_to_rsids() -> Result<(), RsIdsError> {
+        let input = OtherIds(vec![
+            "imdb:tt1234567".to_string(),
+            "tmdb:42".to_string(),
+            "foo:bar".to_string(),
+        ]);
+        let ids = RsIds::try_from(input)?;
+
+        assert_eq!(ids.imdb.as_deref(), Some("tt1234567"));
+        assert_eq!(ids.tmdb, Some(42));
+        assert!(ids.has_other("foo", "bar"));
+        Ok(())
     }
 
     #[cfg(feature = "rusqlite")]

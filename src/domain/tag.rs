@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::domain::other_ids::OtherIds;
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Tag {
@@ -19,6 +21,8 @@ pub struct Tag {
     pub added: u64,
     pub generated: bool,
     pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub otherids: Option<OtherIds>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -38,6 +42,7 @@ pub struct TagForUpdate {
     pub generated: Option<bool>,
 
     pub migrate_to: Option<String>,
+    pub otherids: Option<OtherIds>,
 }
 
 impl Tag {

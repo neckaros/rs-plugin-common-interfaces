@@ -1,25 +1,23 @@
+use crate::domain::{other_ids::OtherIds, rs_ids::RsIds, tools::rating_serializer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::domain::{rs_ids::RsIds, tools::rating_serializer};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct Episode {
     pub serie: String,
     pub season: u32,
     pub number: u32,
 
-    
     #[serde(skip_serializing_if = "Option::is_none")]
     pub abs: Option<u32>,
 
-	pub name: Option<String>,
-	pub overview: Option<String>,
+    pub name: Option<String>,
+    pub overview: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alt: Option<Vec<String>>,
 
-    
     #[serde(skip_serializing_if = "Option::is_none")]
     pub airdate: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -33,8 +31,8 @@ pub struct Episode {
     pub tmdb: Option<u64>,
     pub trakt: Option<u64>,
     pub tvdb: Option<u64>,
-    pub otherids: Option<String>,
-    
+    pub otherids: Option<OtherIds>,
+
     #[serde(serialize_with = "rating_serializer")]
     pub imdb_rating: Option<f32>,
     pub imdb_votes: Option<u64>,
@@ -42,19 +40,18 @@ pub struct Episode {
     pub trakt_rating: Option<f32>,
     pub trakt_votes: Option<u64>,
 
-
     #[serde(skip_serializing_if = "Option::is_none")]
     pub watched: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub progress: Option<u64>,
-       
+
     #[serde(default)]
     pub modified: u64,
     #[serde(default)]
     pub added: u64,
-    
+
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub serie_name: Option<String>
+    pub serie_name: Option<String>,
 }
 
 impl Episode {
@@ -73,8 +70,45 @@ impl From<Episode> for RsIds {
             imdb: value.imdb,
             tmdb: value.tmdb,
             tvrage: None,
-            other_ids: None,
+            other_ids: value.otherids,
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Episode;
+    use crate::domain::other_ids::OtherIds;
+    use serde_json::json;
+
+    #[test]
+    fn episode_otherids_serializes_as_array_and_rejects_string() {
+        let episode = Episode {
+            serie: "serie-1".to_string(),
+            season: 1,
+            number: 1,
+            otherids: Some(OtherIds(vec!["tvmaze:ep-1".to_string()])),
+            ..Default::default()
+        };
+        let value = serde_json::to_value(&episode).unwrap();
+        assert_eq!(value.get("otherids"), Some(&json!(["tvmaze:ep-1"])));
+
+        let parsed: Episode = serde_json::from_value(json!({
+            "serie": "serie-1",
+            "season": 1,
+            "number": 1,
+            "otherids": ["foo:bar"]
+        }))
+        .unwrap();
+        assert_eq!(parsed.otherids, Some(OtherIds(vec!["foo:bar".to_string()])));
+
+        let invalid = serde_json::from_value::<Episode>(json!({
+            "serie": "serie-1",
+            "season": 1,
+            "number": 1,
+            "otherids": "foo:bar"
+        }));
+        assert!(invalid.is_err());
     }
 }

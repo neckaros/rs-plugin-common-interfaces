@@ -2,24 +2,21 @@ use core::cmp::Ordering;
 
 use serde::{Deserialize, Serialize};
 
+use crate::domain::other_ids::OtherIds;
 
 #[derive(Debug, Serialize, strum_macros::AsRefStr)]
 pub enum RsIdsError {
     InvalidId(),
-	NotAMediaId(String),
-    NoMediaIdRequired(Box<RsIds>)
-
+    NotAMediaId(String),
+    NoMediaIdRequired(Box<RsIds>),
 }
 
 // region:    --- Error Boilerplate
 
 impl core::fmt::Display for RsIdsError {
-	fn fmt(
-		&self,
-		fmt: &mut core::fmt::Formatter,
-	) -> core::result::Result<(), core::fmt::Error> {
-		write!(fmt, "{self:?}")
-	}
+    fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error> {
+        write!(fmt, "{self:?}")
+    }
 }
 
 impl std::error::Error for RsIdsError {}
@@ -42,7 +39,7 @@ pub struct RsIds {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tvrage: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub other_ids: Option<Vec<String>>,
+    pub other_ids: Option<OtherIds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub isbn13: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -146,7 +143,9 @@ impl Ord for RsIds {
         if ord != Ordering::Equal {
             return ord;
         }
-        let ord = self.openlibrary_edition_id.cmp(&other.openlibrary_edition_id);
+        let ord = self
+            .openlibrary_edition_id
+            .cmp(&other.openlibrary_edition_id);
         if ord != Ordering::Equal {
             return ord;
         }
@@ -154,7 +153,9 @@ impl Ord for RsIds {
         if ord != Ordering::Equal {
             return ord;
         }
-        let ord = self.google_books_volume_id.cmp(&other.google_books_volume_id);
+        let ord = self
+            .google_books_volume_id
+            .cmp(&other.google_books_volume_id);
         if ord != Ordering::Equal {
             return ord;
         }
@@ -182,10 +183,11 @@ impl Ord for RsIds {
     }
 }
 
-
-
 impl RsIds {
-    fn parse_manga_details(details: &[&str], value: &str) -> Result<(Option<f64>, Option<f64>), RsIdsError> {
+    fn parse_manga_details(
+        details: &[&str],
+        value: &str,
+    ) -> Result<(Option<f64>, Option<f64>), RsIdsError> {
         let mut volume = None;
         let mut chapter = None;
 
@@ -235,13 +237,16 @@ impl RsIds {
 
     pub fn try_add(&mut self, value: String) -> Result<(), RsIdsError> {
         if !Self::is_id(&value) {
-            return Err(RsIdsError::NotAMediaId(value))
+            return Err(RsIdsError::NotAMediaId(value));
         }
         let pipe_elements = value.split('|').collect::<Vec<_>>();
         let base = pipe_elements.first().ok_or(RsIdsError::InvalidId())?;
         let details = &pipe_elements[1..];
         let elements = base.split(':').collect::<Vec<_>>();
-        let source = elements.first().ok_or(RsIdsError::InvalidId())?.to_lowercase();
+        let source = elements
+            .first()
+            .ok_or(RsIdsError::InvalidId())?
+            .to_lowercase();
         let id = elements.get(1).ok_or(RsIdsError::InvalidId())?;
         let is_manga_source = matches!(
             source.as_str(),
@@ -328,7 +333,10 @@ impl RsIds {
                 self.asin = Some(id.to_string());
                 Ok(())
             }
-            _ => Err(RsIdsError::NotAMediaId(value)),
+            _ => {
+                self.add_other(&source, id);
+                Ok(())
+            }
         }
     }
 
@@ -365,11 +373,9 @@ impl RsIds {
             .or(self.as_asin())
     }
 
-
     pub fn into_best_external_or_local(self) -> Option<String> {
         self.as_best_external().or(self.as_redseat())
     }
-
 
     pub fn from_imdb(imdb: String) -> Self {
         Self {
@@ -380,7 +386,7 @@ impl RsIds {
     pub fn as_imdb(&self) -> Option<String> {
         self.imdb.as_ref().map(|i| format!("imdb:{}", i))
     }
-    
+
     pub fn from_trakt(trakt: u64) -> Self {
         Self {
             trakt: Some(trakt),
@@ -393,7 +399,9 @@ impl RsIds {
     pub fn as_id_for_trakt(&self) -> Option<String> {
         if let Some(trakt) = self.trakt {
             Some(trakt.to_string())
-        } else { self.imdb.as_ref().map(|imdb| imdb.to_string()) }
+        } else {
+            self.imdb.as_ref().map(|imdb| imdb.to_string())
+        }
     }
 
     pub fn from_tvdb(tvdb: u64) -> Self {
@@ -406,7 +414,8 @@ impl RsIds {
         self.tvdb.map(|i| format!("tvdb:{}", i))
     }
     pub fn try_tvdb(self) -> Result<u64, RsIdsError> {
-        self.tvdb.ok_or(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
+        self.tvdb
+            .ok_or(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
     }
 
     pub fn from_tmdb(tmdb: u64) -> Self {
@@ -419,7 +428,8 @@ impl RsIds {
         self.tmdb.map(|i| format!("tmdb:{}", i))
     }
     pub fn try_tmdb(self) -> Result<u64, RsIdsError> {
-        self.tmdb.ok_or(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
+        self.tmdb
+            .ok_or(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
     }
 
     pub fn from_redseat(redseat: String) -> Self {
@@ -435,13 +445,19 @@ impl RsIds {
         self.isbn13.as_ref().map(|i| format!("isbn13:{}", i))
     }
     pub fn as_openlibrary_edition_id(&self) -> Option<String> {
-        self.openlibrary_edition_id.as_ref().map(|i| format!("oleid:{}", i))
+        self.openlibrary_edition_id
+            .as_ref()
+            .map(|i| format!("oleid:{}", i))
     }
     pub fn as_openlibrary_work_id(&self) -> Option<String> {
-        self.openlibrary_work_id.as_ref().map(|i| format!("olwid:{}", i))
+        self.openlibrary_work_id
+            .as_ref()
+            .map(|i| format!("olwid:{}", i))
     }
     pub fn as_google_books_volume_id(&self) -> Option<String> {
-        self.google_books_volume_id.as_ref().map(|i| format!("gbvid:{}", i))
+        self.google_books_volume_id
+            .as_ref()
+            .map(|i| format!("gbvid:{}", i))
     }
     pub fn as_anilist_manga_id(&self) -> Option<String> {
         self.anilist_manga_id.map(|i| format!("anilist:{}", i))
@@ -451,7 +467,9 @@ impl RsIds {
             .map(|i| format!("anilist:{}{}", i, self.manga_details_suffix()))
     }
     pub fn as_mangadex_manga_uuid(&self) -> Option<String> {
-        self.mangadex_manga_uuid.as_ref().map(|i| format!("mangadex:{}", i))
+        self.mangadex_manga_uuid
+            .as_ref()
+            .map(|i| format!("mangadex:{}", i))
     }
     pub fn as_mangadex_manga_uuid_with_details(&self) -> Option<String> {
         self.mangadex_manga_uuid
@@ -481,7 +499,34 @@ impl RsIds {
         } else {
             Err(RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
         }
-    }   
+    }
+
+    pub fn add_other(&mut self, key: &str, value: &str) {
+        if key.trim().is_empty() {
+            return;
+        }
+        self.other_ids
+            .get_or_insert_with(OtherIds::default)
+            .add(key, value);
+    }
+
+    pub fn has_other_key(&self, key: &str) -> bool {
+        self.other_ids
+            .as_ref()
+            .is_some_and(|other_ids| other_ids.has_key(key))
+    }
+
+    pub fn get_other(&self, key: &str) -> Option<String> {
+        self.other_ids
+            .as_ref()
+            .and_then(|other_ids| other_ids.get(key))
+    }
+
+    pub fn has_other(&self, key: &str, value: &str) -> bool {
+        self.other_ids
+            .as_ref()
+            .is_some_and(|other_ids| other_ids.contains(key, value))
+    }
 
     /// check if the provided id need parsing like "trakt:xxxxx" and is not directly the local id from this server
     pub fn is_id(id: &str) -> bool {
@@ -492,7 +537,7 @@ impl RsIds {
 
 impl TryFrom<Vec<String>> for RsIds {
     type Error = RsIdsError;
-    
+
     fn try_from(values: Vec<String>) -> Result<Self, RsIdsError> {
         let mut ids = Self::default();
         for value in values {
@@ -512,7 +557,6 @@ impl TryFrom<String> for RsIds {
 }
 
 impl From<RsIds> for Vec<String> {
-    
     fn from(value: RsIds) -> Self {
         let mut ids = vec![];
         if let Some(id) = value.as_redseat() {
@@ -554,14 +598,19 @@ impl From<RsIds> for Vec<String> {
         if let Some(id) = value.as_asin() {
             ids.push(id)
         }
+        if let Some(other_ids) = value.other_ids {
+            ids.extend(other_ids.into_vec());
+        }
         ids
     }
 }
 
-
 #[cfg(feature = "rusqlite")]
 pub mod external_images_rusqlite {
-    use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
+    use rusqlite::{
+        types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef},
+        ToSql,
+    };
 
     use super::RsIds;
 
@@ -579,13 +628,7 @@ pub mod external_images_rusqlite {
             Ok(ToSqlOutput::from(r))
         }
     }
-
-
-    
-  
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -692,6 +735,28 @@ mod tests {
     }
 
     #[test]
+    fn test_unknown_source_is_stored_as_other_id() -> Result<(), RsIdsError> {
+        let mut ids = RsIds::default();
+        ids.try_add("AniDb:1234".to_string())?;
+        assert!(ids.has_other_key("anidb"));
+        assert_eq!(ids.get_other("ANIDB"), Some("1234".to_string()));
+        assert!(ids.has_other("anidb", "1234"));
+        Ok(())
+    }
+
+    #[test]
+    fn test_add_other_replaces_existing_key_value() {
+        let mut ids = RsIds::default();
+        ids.add_other("custom", "first");
+        ids.add_other("CUSTOM", "second");
+        assert_eq!(ids.get_other("custom"), Some("second".to_string()));
+        assert_eq!(
+            ids.other_ids,
+            Some(OtherIds(vec!["custom:second".to_string()]))
+        );
+    }
+
+    #[test]
     fn test_manga_with_details_methods_keep_base_as_methods() {
         let ids = RsIds {
             anilist_manga_id: Some(123),
@@ -704,7 +769,10 @@ mod tests {
 
         assert_eq!(ids.as_anilist_manga_id(), Some("anilist:123".to_string()));
         assert_eq!(ids.as_myanimelist_manga_id(), Some("mal:456".to_string()));
-        assert_eq!(ids.as_mangadex_manga_uuid(), Some("mangadex:uuid-2".to_string()));
+        assert_eq!(
+            ids.as_mangadex_manga_uuid(),
+            Some("mangadex:uuid-2".to_string())
+        );
         assert_eq!(
             ids.as_anilist_manga_id_with_details(),
             Some("anilist:123|volume:1|chapter:2".to_string())
@@ -790,13 +858,27 @@ mod tests {
 
     #[test]
     fn test_roundtrip_vec_rsids_vec_uses_pipe_format_for_manga_details() -> Result<(), RsIdsError> {
-        let input = vec![
-            "anilist:999|chapter:2|volume:1".to_string(),
-        ];
+        let input = vec!["anilist:999|chapter:2|volume:1".to_string()];
         let ids = RsIds::try_from(input)?;
         let output: Vec<String> = ids.into();
 
         assert!(output.contains(&"anilist:999|volume:1|chapter:2".to_string()));
+        Ok(())
+    }
+
+    #[test]
+    fn test_roundtrip_vec_rsids_vec_preserves_other_ids() -> Result<(), RsIdsError> {
+        let input = vec![
+            "foo:1".to_string(),
+            "bar:value-2".to_string(),
+            "imdb:tt1234567".to_string(),
+        ];
+        let ids = RsIds::try_from(input)?;
+        let output: Vec<String> = ids.into();
+
+        assert!(output.contains(&"foo:1".to_string()));
+        assert!(output.contains(&"bar:value-2".to_string()));
+        assert!(output.contains(&"imdb:tt1234567".to_string()));
         Ok(())
     }
 
@@ -813,7 +895,10 @@ mod tests {
             asin: Some("B00TEST000".to_string()),
             ..Default::default()
         };
-        assert_eq!(ids.as_best_external(), Some("isbn13:9780131103627".to_string()));
+        assert_eq!(
+            ids.as_best_external(),
+            Some("isbn13:9780131103627".to_string())
+        );
 
         let ids = RsIds {
             openlibrary_edition_id: Some("OL5M".to_string()),
@@ -830,5 +915,26 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(ids.as_best_external(), Some("anilist:12".to_string()));
+    }
+
+    #[cfg(feature = "rusqlite")]
+    #[test]
+    fn test_rusqlite_roundtrip_rsids_with_other_ids() -> rusqlite::Result<()> {
+        use rusqlite::Connection;
+
+        let conn = Connection::open_in_memory()?;
+        conn.execute("CREATE TABLE test_rsids (ids TEXT NOT NULL)", [])?;
+
+        let mut ids = RsIds::default();
+        ids.add_other("foo", "42");
+        ids.add_other("bar", "abc");
+        conn.execute("INSERT INTO test_rsids (ids) VALUES (?1)", [&ids])?;
+
+        let loaded: RsIds =
+            conn.query_row("SELECT ids FROM test_rsids LIMIT 1", [], |row| row.get(0))?;
+
+        assert!(loaded.has_other("foo", "42"));
+        assert!(loaded.has_other("bar", "abc"));
+        Ok(())
     }
 }

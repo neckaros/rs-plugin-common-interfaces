@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use strum_macros::{Display, EnumString};
 
-use crate::domain::{rs_ids::RsIds, tools::rating_serializer};
+use crate::domain::{other_ids::OtherIds, rs_ids::RsIds, tools::rating_serializer};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Display, EnumString)]
 #[serde(from = "String", into = "String")]
@@ -121,7 +121,7 @@ pub struct Serie {
     pub tmdb: Option<u64>,
     pub trakt: Option<u64>,
     pub tvdb: Option<u64>,
-    pub otherids: Option<String>,
+    pub otherids: Option<OtherIds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub openlibrary_work_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -171,7 +171,7 @@ impl From<Serie> for RsIds {
             myanimelist_manga_id: value.myanimelist_manga_id,
             openlibrary_work_id: value.openlibrary_work_id,
             tvrage: None,
-            other_ids: None,
+            other_ids: value.otherids,
             ..Default::default()
         }
     }
@@ -179,7 +179,10 @@ impl From<Serie> for RsIds {
 
 #[cfg(test)]
 mod tests {
-    use super::SerieType;
+    use serde_json::json;
+
+    use super::{Serie, SerieType};
+    use crate::domain::other_ids::OtherIds;
 
     #[test]
     fn serie_type_serde() {
@@ -195,7 +198,10 @@ mod tests {
         let custom: SerieType = serde_json::from_str("\"webtoon\"").unwrap();
         assert_eq!(custom, SerieType::Custom("webtoon".to_string()));
 
-        assert_eq!(serde_json::to_string(&SerieType::Anime).unwrap(), "\"anime\"");
+        assert_eq!(
+            serde_json::to_string(&SerieType::Anime).unwrap(),
+            "\"anime\""
+        );
         assert_eq!(
             serde_json::to_string(&SerieType::Custom("lightnovel".to_string())).unwrap(),
             "\"lightnovel\""
@@ -204,5 +210,35 @@ mod tests {
             serde_json::to_string(&SerieType::LightNovel).unwrap(),
             "\"light_novel\""
         );
+    }
+
+    #[test]
+    fn serie_otherids_serializes_as_array_and_rejects_string() {
+        let serie = Serie {
+            id: "serie-1".to_string(),
+            name: "Serie 1".to_string(),
+            otherids: Some(OtherIds(vec!["tvmaze:123".to_string()])),
+            ..Default::default()
+        };
+        let value = serde_json::to_value(&serie).unwrap();
+        assert_eq!(value.get("otherids"), Some(&json!(["tvmaze:123"])));
+
+        let parsed: Serie = serde_json::from_value(json!({
+            "id": "serie-1",
+            "name": "Serie 1",
+            "otherids": ["anidb:12"]
+        }))
+        .unwrap();
+        assert_eq!(
+            parsed.otherids,
+            Some(OtherIds(vec!["anidb:12".to_string()]))
+        );
+
+        let invalid = serde_json::from_value::<Serie>(json!({
+            "id": "serie-1",
+            "name": "Serie 1",
+            "otherids": "anidb:12"
+        }));
+        assert!(invalid.is_err());
     }
 }

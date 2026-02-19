@@ -365,7 +365,9 @@ impl RsIds {
             .or(self.as_mangadex_manga_uuid())
             .or(self.as_myanimelist_manga_id())
             .or(self.as_asin())
-            .or(self.other_ids.and_then(|other_ids| other_ids.as_slice().first().cloned()))
+            .or(self
+                .other_ids
+                .and_then(|other_ids| other_ids.as_slice().first().cloned()))
     }
     pub fn as_best_external(&self) -> Option<String> {
         self.as_trakt()
@@ -380,7 +382,10 @@ impl RsIds {
             .or(self.as_mangadex_manga_uuid())
             .or(self.as_myanimelist_manga_id())
             .or(self.as_asin())
-            .or(self.other_ids.as_ref().and_then(|other_ids| other_ids.as_slice().first().cloned()))
+            .or(self
+                .other_ids
+                .as_ref()
+                .and_then(|other_ids| other_ids.as_slice().first().cloned()))
     }
 
     pub fn into_best_external_or_local(self) -> Option<String> {

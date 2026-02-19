@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::domain::{media::MediaItemReference, person::Person, tag::Tag};
+
 pub mod backup;
 pub mod book;
 pub mod element_type;
@@ -25,4 +27,20 @@ pub enum MediaElement {
     Episode(episode::Episode),
     Serie(serie::Serie),
     Book(book::Book),
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ItemWithRelations<T> {
+    #[serde(flatten)]
+    pub book: T,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people_details: Option<Vec<Person>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags_details: Option<Vec<Tag>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people: Option<Vec<MediaItemReference>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<MediaItemReference>>,
 }

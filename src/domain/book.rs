@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::domain::{other_ids::OtherIds, rs_ids::RsIds};
+use crate::domain::{other_ids::OtherIds, person::Person, rs_ids::RsIds};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -88,6 +88,8 @@ pub struct BookForUpdate {
     pub google_books_volume_id: Option<String>,
     pub asin: Option<String>,
     pub otherids: Option<OtherIds>,
+
+    pub people: Option<Vec<Person>>,
 }
 
 impl BookForUpdate {

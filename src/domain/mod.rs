@@ -34,8 +34,8 @@ pub enum MediaElement {
 pub struct ItemWithRelations<T> {
     #[serde(flatten)]
     pub item: T,
-    #[serde(flatten)]
-    pub relations: Relations,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relations: Option<Relations>,
 }
 
 

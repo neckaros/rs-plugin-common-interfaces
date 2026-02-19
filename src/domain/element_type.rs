@@ -1,16 +1,18 @@
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum ElementType {
     Tag,
     Person,
     Media,
-	Movie,
+    Movie,
     Serie,
-	Episode,
+    Episode,
     Book,
     Song,
     #[default]
@@ -19,8 +21,11 @@ pub enum ElementType {
 
 #[cfg(feature = "rusqlite")]
 pub mod element_type_rusqlite {
+    use rusqlite::{
+        types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef},
+        ToSql,
+    };
     use std::str::FromStr;
-    use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
     use super::ElementType;
 
@@ -31,12 +36,11 @@ pub mod element_type_rusqlite {
             })
         }
     }
-    
-    
+
     impl ToSql for ElementType {
         fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
             let l = (&self.clone()).to_string();
             Ok(ToSqlOutput::from(l))
         }
-    }    
+    }
 }

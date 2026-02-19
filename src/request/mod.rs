@@ -1,17 +1,17 @@
 use std::{collections::HashMap, str::FromStr};
 
-use regex::Regex;
-use serde_json::Value;
-use urlencoding::decode;
 use crate::{PluginCredential, RsFileType, RsVideoFormat};
 use crate::{RsAudio, RsResolution, RsVideoCodec};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use strum_macros::EnumString;
+use urlencoding::decode;
 
 pub mod error;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsCookie {
     pub domain: String,
     pub http_only: bool,
@@ -27,43 +27,90 @@ impl FromStr for RsCookie {
     fn from_str(line: &str) -> Result<Self, Self::Err> {
         //let [domain, httpOnly, path, secure, expiration, name, value ] = line.split(';');
         let mut splitted = line.split(';');
-        Ok(RsCookie { 
-            domain: splitted.next().ok_or(error::RequestError::UnableToParseCookieString("domain".to_owned(), line.to_owned()))?.to_owned(), 
-            http_only: "true" == splitted.next().ok_or(error::RequestError::UnableToParseCookieString("http_only".to_owned(), line.to_owned()))?, 
-            path: splitted.next().ok_or(error::RequestError::UnableToParseCookieString("path".to_owned(), line.to_owned()))?.to_owned(), 
-            secure: "true" == splitted.next().ok_or(error::RequestError::UnableToParseCookieString("secure".to_owned(), line.to_owned()))?, 
+        Ok(RsCookie {
+            domain: splitted
+                .next()
+                .ok_or(error::RequestError::UnableToParseCookieString(
+                    "domain".to_owned(),
+                    line.to_owned(),
+                ))?
+                .to_owned(),
+            http_only: "true"
+                == splitted
+                    .next()
+                    .ok_or(error::RequestError::UnableToParseCookieString(
+                        "http_only".to_owned(),
+                        line.to_owned(),
+                    ))?,
+            path: splitted
+                .next()
+                .ok_or(error::RequestError::UnableToParseCookieString(
+                    "path".to_owned(),
+                    line.to_owned(),
+                ))?
+                .to_owned(),
+            secure: "true"
+                == splitted
+                    .next()
+                    .ok_or(error::RequestError::UnableToParseCookieString(
+                        "secure".to_owned(),
+                        line.to_owned(),
+                    ))?,
             expiration: {
-                let t = splitted.next().ok_or(error::RequestError::UnableToParseCookieString("expiration".to_owned(), line.to_owned()))?.to_owned();
+                let t = splitted
+                    .next()
+                    .ok_or(error::RequestError::UnableToParseCookieString(
+                        "expiration".to_owned(),
+                        line.to_owned(),
+                    ))?
+                    .to_owned();
                 if t.is_empty() {
-                    None  
+                    None
                 } else {
-                    Some(t.parse().map_err(|_| error::RequestError::UnableToParseCookieString("expiration parsing".to_owned(), line.to_owned()))?)
+                    Some(t.parse().map_err(|_| {
+                        error::RequestError::UnableToParseCookieString(
+                            "expiration parsing".to_owned(),
+                            line.to_owned(),
+                        )
+                    })?)
                 }
-            }, 
-            name: splitted.next().ok_or(error::RequestError::UnableToParseCookieString("name".to_owned(), line.to_owned()))?.to_owned(), 
-            value: splitted.next().ok_or(error::RequestError::UnableToParseCookieString("value".to_owned(), line.to_owned()))?.to_owned() })
+            },
+            name: splitted
+                .next()
+                .ok_or(error::RequestError::UnableToParseCookieString(
+                    "name".to_owned(),
+                    line.to_owned(),
+                ))?
+                .to_owned(),
+            value: splitted
+                .next()
+                .ok_or(error::RequestError::UnableToParseCookieString(
+                    "value".to_owned(),
+                    line.to_owned(),
+                ))?
+                .to_owned(),
+        })
     }
 }
 
-impl  RsCookie {
+impl RsCookie {
     pub fn netscape(&self) -> String {
         let second = if self.domain.starts_with('.') {
             "TRUE"
         } else {
             "FALSE"
         };
-        let secure = if self.secure {
-            "TRUE"
-        } else {
-            "FALSE"
-        };
+        let secure = if self.secure { "TRUE" } else { "FALSE" };
         let expiration = if let Some(expiration) = self.expiration {
-           (expiration as u32).to_string()
+            (expiration as u32).to_string()
         } else {
             "".to_owned()
         };
         //return [domain, domain.startsWith('.') ? 'TRUE' : 'FALSE', path, secure ? 'TRUE' : 'FALSE', expiration.split('.')[0], name, value].join('\t')
-        format!("{}\t{}\t{}\t{}\t{}\t{}\t{}", self.domain, second, self.path, secure, expiration, self.name, self.value)
+        format!(
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            self.domain, second, self.path, secure, expiration, self.name, self.value
+        )
     }
 
     pub fn header(&self) -> String {
@@ -78,16 +125,25 @@ pub trait RsCookies {
 
 impl RsCookies for Vec<RsCookie> {
     fn header_value(&self) -> String {
-        self.iter().map(|t| t.header()).collect::<Vec<String>>().join("; ")
+        self.iter()
+            .map(|t| t.header())
+            .collect::<Vec<String>>()
+            .join("; ")
     }
 
     fn headers(&self) -> (String, String) {
-        ("cookie".to_owned(), self.iter().map(|t| t.header()).collect::<Vec<String>>().join("; "))
+        (
+            "cookie".to_owned(),
+            self.iter()
+                .map(|t| t.header())
+                .collect::<Vec<String>>()
+                .join("; "),
+        )
     }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsRequest {
     pub upload_id: Option<String>,
     pub url: String,
@@ -111,7 +167,7 @@ pub struct RsRequest {
     /// If true can be played/downloaded instantly (streamable link, no need to add to service first)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub instant: Option<bool>,
-    
+
     pub json_body: Option<Value>,
     #[serde(default)]
     pub method: RsRequestMethod,
@@ -130,7 +186,6 @@ pub struct RsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub selected_file: Option<String>,
 
-    
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -184,7 +239,7 @@ impl RsRequest {
     pub fn set_cookies(&mut self, cookies: Vec<RsCookie>) {
         let mut existing = if let Some(headers) = &self.headers {
             headers.to_owned()
-        } else{
+        } else {
             vec![]
         };
         existing.push(cookies.headers());
@@ -195,25 +250,34 @@ impl RsRequest {
         if self.filename.is_some() {
             self.filename.clone()
         } else {
-            self.url.split('/')
-            .last()
-            .and_then(|segment| {
-                segment.split('?')
-                    .next()
-                    .filter(|s| !s.is_empty())
-                    .map(|s| s.to_string())
-            })
-            .and_then(|potential| {
-                let extension = potential.split('.').map(|t| t.to_string()).collect::<Vec<String>>();
-                if extension.len() > 1 && extension.last().unwrap_or(&"".to_string()).len() > 2 &&  extension.last().unwrap_or(&"".to_string()).len() < 5{
-                    let decoded = decode(&potential).map(|x| x.into_owned()).unwrap_or(potential); // Decodes the URL
-                    Some(decoded)
-                } else {
-                    None
-                }
-            })
+            self.url
+                .split('/')
+                .last()
+                .and_then(|segment| {
+                    segment
+                        .split('?')
+                        .next()
+                        .filter(|s| !s.is_empty())
+                        .map(|s| s.to_string())
+                })
+                .and_then(|potential| {
+                    let extension = potential
+                        .split('.')
+                        .map(|t| t.to_string())
+                        .collect::<Vec<String>>();
+                    if extension.len() > 1
+                        && extension.last().unwrap_or(&"".to_string()).len() > 2
+                        && extension.last().unwrap_or(&"".to_string()).len() < 5
+                    {
+                        let decoded = decode(&potential)
+                            .map(|x| x.into_owned())
+                            .unwrap_or(potential); // Decodes the URL
+                        Some(decoded)
+                    } else {
+                        None
+                    }
+                })
         }
-        
     }
 
     pub fn parse_filename(&mut self) {
@@ -241,7 +305,6 @@ impl RsRequest {
                 self.episode = caps[2].parse::<u32>().ok();
             }
         }
- 
     }
 
     pub fn parse_subfilenames(&mut self) {
@@ -253,13 +316,15 @@ impl RsRequest {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum RsRequestStatus {
     /// No plugin yet processed this request
     #[default]
-	Unprocessed,
+    Unprocessed,
     /// All plugin processed but with no result
     Processed,
     ///if remain in this state after all plugin it will go through YtDl to try to extract medias
@@ -275,32 +340,29 @@ pub enum RsRequestStatus {
     /// `url` is ready but should be proxied by the server as it contains sensitive informations (like token)
     FinalPrivate,
     /// `url` is ready and can be directly sent to _any_ user directly (using redirect)
-    FinalPublic
+    FinalPublic,
 }
 
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum RsRequestMethod {
-    
     #[default]
-	Get,
+    Get,
     Post,
     Patch,
     Delete,
     Head,
-  
 }
 
-
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsRequestFiles {
     pub name: String,
     pub size: u64,
-    
+
     pub mime: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -388,7 +450,9 @@ pub struct RsGroupDownload {
 }
 
 /// Status of a processing task added via request_add
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default)]
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
 #[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum RsProcessingStatus {
@@ -466,7 +530,7 @@ mod tests {
         assert!(parsed.value == "w1j".to_owned());
         Ok(())
     }
-    
+
     #[test]
     fn test_cookie_parsing_no_expi() -> Result<(), RequestError> {
         let parsed = RsCookie::from_str(".twitter.com;false;/;true;;kdt;w1j")?;
@@ -488,30 +552,73 @@ mod tests {
     }
     #[test]
     fn test_netscape_doublequote() -> Result<(), RequestError> {
-        let parsed = RsCookie::from_str(".twitter.com;true;/;true;1726506480.700665;ads_prefs;\"HBESAAA=\"")?;
-        assert!(parsed.netscape() == ".twitter.com\tTRUE\t/\tTRUE\t1726506480\tads_prefs\t\"HBESAAA=\"");
+        let parsed = RsCookie::from_str(
+            ".twitter.com;true;/;true;1726506480.700665;ads_prefs;\"HBESAAA=\"",
+        )?;
+        assert!(
+            parsed.netscape() == ".twitter.com\tTRUE\t/\tTRUE\t1726506480\tads_prefs\t\"HBESAAA=\""
+        );
         Ok(())
     }
 
     #[test]
     fn test_parse_filename() -> Result<(), RequestError> {
-        let req = RsRequest {url: "http://www.test.com/filename.mp4?toto=3".to_string(), filename: Some("test.mkv".to_owned()), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), Some("test.mkv".to_string()));
-        let req = RsRequest {url: "http://www.test.com/filename.mp4?toto=3".to_string(), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), Some("filename.mp4".to_string()), "We are expecting a filename from the url");
-        let req = RsRequest {url: "http://www.test.com/notfilename?toto=3".to_string(), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as there is no filename with extensiopn in url");
-        let req = RsRequest {url: "http://www.test.com/notfilename.toolong?toto=3".to_string(), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), None, "Should return none as too long after dot is not an extension");
-        let req = RsRequest {url: "http://www.test.com/filename%20test.mp4?toto=3".to_string(), ..Default::default()};
-        assert_eq!(req.filename_or_extract_from_url(), Some("filename test.mp4".to_string()), "Should decode URL-encoded filename");
+        let req = RsRequest {
+            url: "http://www.test.com/filename.mp4?toto=3".to_string(),
+            filename: Some("test.mkv".to_owned()),
+            ..Default::default()
+        };
+        assert_eq!(
+            req.filename_or_extract_from_url(),
+            Some("test.mkv".to_string())
+        );
+        let req = RsRequest {
+            url: "http://www.test.com/filename.mp4?toto=3".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(
+            req.filename_or_extract_from_url(),
+            Some("filename.mp4".to_string()),
+            "We are expecting a filename from the url"
+        );
+        let req = RsRequest {
+            url: "http://www.test.com/notfilename?toto=3".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(
+            req.filename_or_extract_from_url(),
+            None,
+            "Should return none as there is no filename with extensiopn in url"
+        );
+        let req = RsRequest {
+            url: "http://www.test.com/notfilename.toolong?toto=3".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(
+            req.filename_or_extract_from_url(),
+            None,
+            "Should return none as too long after dot is not an extension"
+        );
+        let req = RsRequest {
+            url: "http://www.test.com/filename%20test.mp4?toto=3".to_string(),
+            ..Default::default()
+        };
+        assert_eq!(
+            req.filename_or_extract_from_url(),
+            Some("filename test.mp4".to_string()),
+            "Should decode URL-encoded filename"
+        );
         Ok(())
     }
 
-
     #[test]
     fn test_header() -> Result<(), RequestError> {
-        let parsed = vec![RsCookie::from_str(".twitter.com;true;/;true;1726506480.700665;ads_prefs;\"HBESAAA=\"")?, RsCookie::from_str(".twitter.com;false;/;true;1722364794.437907;kdt;w1j")?];
+        let parsed = vec![
+            RsCookie::from_str(
+                ".twitter.com;true;/;true;1726506480.700665;ads_prefs;\"HBESAAA=\"",
+            )?,
+            RsCookie::from_str(".twitter.com;false;/;true;1722364794.437907;kdt;w1j")?,
+        ];
         println!("header: {}", parsed.header_value());
         assert!(parsed.header_value() == "ads_prefs=\"HBESAAA=\"; kdt=w1j");
         Ok(())
@@ -519,7 +626,12 @@ mod tests {
 
     #[test]
     fn test_parse() -> Result<(), RequestError> {
-        let mut req = RsRequest { filename: Some("Shogun.2024.S01E01.Anjin.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264-NTb.mkv".to_owned()), ..Default::default()};
+        let mut req = RsRequest {
+            filename: Some(
+                "Shogun.2024.S01E01.Anjin.1080p.VOSTFR.DSNP.WEB-DL.DDP5.1.H.264-NTb.mkv".to_owned(),
+            ),
+            ..Default::default()
+        };
         req.parse_filename();
         assert_eq!(req.season.unwrap(), 1);
         assert_eq!(req.episode.unwrap(), 1);
@@ -532,7 +644,10 @@ mod tests {
 
     #[test]
     fn test_parse2() -> Result<(), RequestError> {
-        let mut req = RsRequest { filename: Some("Shogun.2024.S01E05.MULTi.HDR.DV.2160p.WEB.H265-FW".to_owned()), ..Default::default()};
+        let mut req = RsRequest {
+            filename: Some("Shogun.2024.S01E05.MULTi.HDR.DV.2160p.WEB.H265-FW".to_owned()),
+            ..Default::default()
+        };
         req.parse_filename();
         assert_eq!(req.season.expect("a season"), 1);
         assert_eq!(req.episode.expect("an episode"), 5);
@@ -542,4 +657,3 @@ mod tests {
         Ok(())
     }
 }
-

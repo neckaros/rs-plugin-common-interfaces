@@ -7,8 +7,6 @@ use strum_macros::EnumString;
 
 use crate::domain::backup::BackupFile;
 
-
-
 pub const DEFAULT_MIME: &str = "application/octet-stream";
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -277,7 +275,6 @@ pub struct RsGpsPosition {
     pub lat: f64,
     pub long: f64,
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]

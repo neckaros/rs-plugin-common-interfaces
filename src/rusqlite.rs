@@ -1,8 +1,14 @@
 use std::str::FromStr;
 
-use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
+use rusqlite::{
+    types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef},
+    ToSql,
+};
 
-use crate::{CredentialType, Gender, MediaType, PluginType, RsAudio, RsResolution, RsVideoCodec, RsVideoFormat};
+use crate::{
+    CredentialType, Gender, MediaType, PluginType, RsAudio, RsResolution, RsVideoCodec,
+    RsVideoFormat,
+};
 
 impl FromSql for PluginType {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -13,7 +19,6 @@ impl FromSql for PluginType {
     }
 }
 
-
 impl ToSql for PluginType {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
         let l = &self.clone();
@@ -21,7 +26,6 @@ impl ToSql for PluginType {
         Ok(ToSqlOutput::from(r))
     }
 }
-
 
 impl FromSql for CredentialType {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -40,7 +44,6 @@ impl ToSql for CredentialType {
     }
 }
 
-
 impl FromSql for RsVideoFormat {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
         String::column_result(value).and_then(|as_string| {
@@ -57,8 +60,6 @@ impl ToSql for RsVideoFormat {
         Ok(ToSqlOutput::from(r))
     }
 }
-
-
 
 impl FromSql for RsResolution {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -111,7 +112,6 @@ impl ToSql for RsVideoCodec {
     }
 }
 
-
 impl FromSql for MediaType {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
         String::column_result(value).and_then(|as_string| {
@@ -120,7 +120,6 @@ impl FromSql for MediaType {
         })
     }
 }
-
 
 impl ToSql for MediaType {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
@@ -138,7 +137,6 @@ impl FromSql for Gender {
         })
     }
 }
-
 
 impl ToSql for Gender {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {

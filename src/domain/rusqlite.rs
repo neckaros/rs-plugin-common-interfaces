@@ -1,8 +1,11 @@
-use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
+use rusqlite::{
+    types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef},
+    ToSql,
+};
 
-use super::serie::{SerieStatus, SerieType};
 use super::media::{FileType, RsGpsPosition};
 use super::movie::MovieStatus;
+use super::serie::{SerieStatus, SerieType};
 
 impl FromSql for SerieStatus {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -30,10 +33,7 @@ impl ToSql for SerieType {
     }
 }
 
-
-
 // Medias
-
 
 impl FromSql for RsGpsPosition {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -66,7 +66,6 @@ impl ToSql for FileType {
         Ok(ToSqlOutput::from(self.to_string()))
     }
 }
-
 
 // Movie
 impl FromSql for MovieStatus {

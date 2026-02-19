@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct BackupFile {
     pub backup: String,
-	pub library: Option<String>,
+    pub library: Option<String>,
     pub file: String,
     pub id: String,
     pub path: String,

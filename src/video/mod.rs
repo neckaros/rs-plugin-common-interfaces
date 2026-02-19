@@ -7,26 +7,36 @@ use crate::{PluginCredential, RsRequest};
 pub mod rusqlite;
 
 fn text_contains(text: &str, contains: &str) -> bool {
-    text.contains(&format!(".{}.", contains)) || text.starts_with(contains) || text.ends_with(contains)
+    text.contains(&format!(".{}.", contains))
+        || text.starts_with(contains)
+        || text.ends_with(contains)
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, strum_macros::EnumString, Default)]
-#[serde(rename_all = "lowercase")] 
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    Clone,
+    PartialEq,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    Default,
+)]
+#[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "lowercase")]
 pub enum RsVideoFormat {
-	Mp4,
-	M4v,
+    Mp4,
+    M4v,
     Mov,
     Mkv,
     WebM,
     Wmv,
     Avi,
     #[default]
-    Other
+    Other,
 }
 
 impl RsVideoFormat {
-
     pub fn from_filename(filename: &str) -> Self {
         let filename = filename.to_lowercase();
         if filename.ends_with(".mkv") {
@@ -70,16 +80,17 @@ impl RsVideoFormat {
             "video/x-ms-wmv" => Some(RsVideoFormat::Wmv),
             "video/x-msvideo" => Some(RsVideoFormat::Avi),
             "application/octet-stream" => Some(RsVideoFormat::Other),
-            _ => None
+            _ => None,
         }
     }
 }
 
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
 pub enum RsResolution {
     #[strum(serialize = "4K")]
-	UHD,
+    UHD,
     #[strum(serialize = "1080p")]
     FullHD,
     #[strum(serialize = "720p")]
@@ -97,7 +108,9 @@ impl RsResolution {
             RsResolution::FullHD
         } else if text_contains(&modified_filename, "720p") {
             RsResolution::HD
-        } else if text_contains(&modified_filename, "4k") || text_contains(&modified_filename, "2160p") {
+        } else if text_contains(&modified_filename, "4k")
+            || text_contains(&modified_filename, "2160p")
+        {
             RsResolution::UHD
         } else {
             RsResolution::Unknown
@@ -105,9 +118,11 @@ impl RsResolution {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
 pub enum RsVideoCodec {
-	H265,
+    H265,
     H264,
     AV1,
     XVID,
@@ -120,13 +135,22 @@ pub enum RsVideoCodec {
 impl RsVideoCodec {
     pub fn from_filename(filename: &str) -> Self {
         let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
-        if text_contains(&modified_filename, "x265") || text_contains(&modified_filename, "x.265") || text_contains(&modified_filename, "hevc") || text_contains(&modified_filename, "h265")  || text_contains(&modified_filename, "h.265") {
+        if text_contains(&modified_filename, "x265")
+            || text_contains(&modified_filename, "x.265")
+            || text_contains(&modified_filename, "hevc")
+            || text_contains(&modified_filename, "h265")
+            || text_contains(&modified_filename, "h.265")
+        {
             RsVideoCodec::H265
-        } else if text_contains(&modified_filename, "h264")|| text_contains(&modified_filename, "h.264") || text_contains(&modified_filename, "x.264")  || text_contains(&modified_filename, "x264"){
+        } else if text_contains(&modified_filename, "h264")
+            || text_contains(&modified_filename, "h.264")
+            || text_contains(&modified_filename, "x.264")
+            || text_contains(&modified_filename, "x264")
+        {
             RsVideoCodec::H264
-        } else if text_contains(&modified_filename, "av1"){
+        } else if text_contains(&modified_filename, "av1") {
             RsVideoCodec::AV1
-        } else if text_contains(&modified_filename, "xvid"){
+        } else if text_contains(&modified_filename, "xvid") {
             RsVideoCodec::XVID
         } else {
             RsVideoCodec::Unknown
@@ -134,12 +158,14 @@ impl RsVideoCodec {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
 pub enum RsAudio {
     #[strum(serialize = "Atmos")]
-	Atmos,
+    Atmos,
     #[strum(serialize = "DDP5.1")]
-	DDP51,
+    DDP51,
     #[strum(serialize = "DTSHD")]
     DTSHD,
     #[strum(serialize = "DTSX")]
@@ -158,13 +184,16 @@ pub enum RsAudio {
     Unknown,
 }
 
-
 impl RsAudio {
     pub fn from_filename(filename: &str) -> Self {
         let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "atmos") {
             RsAudio::Atmos
-        } else if text_contains(&modified_filename, "ddp5.1") || text_contains(&modified_filename, "ddp51") || text_contains(&modified_filename, "dolby.digital.plus.5.1") || text_contains(&modified_filename, "dd51") {
+        } else if text_contains(&modified_filename, "ddp5.1")
+            || text_contains(&modified_filename, "ddp51")
+            || text_contains(&modified_filename, "dolby.digital.plus.5.1")
+            || text_contains(&modified_filename, "dd51")
+        {
             RsAudio::DDP51
         } else if text_contains(&modified_filename, "dtshd") {
             RsAudio::DTSHD
@@ -172,9 +201,13 @@ impl RsAudio {
             RsAudio::DTSX
         } else if text_contains(&modified_filename, "dts") {
             RsAudio::DTS
-        } else if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
+        } else if text_contains(&modified_filename, "ac35.1")
+            || text_contains(&modified_filename, "ac3.5.1")
+        {
             RsAudio::AC351
-        } else if text_contains(&modified_filename, "aac5.1") || text_contains(&modified_filename, "aac51") {
+        } else if text_contains(&modified_filename, "aac5.1")
+            || text_contains(&modified_filename, "aac51")
+        {
             RsAudio::AAC51
         } else if text_contains(&modified_filename, "aac") {
             RsAudio::AAC
@@ -190,44 +223,48 @@ impl RsAudio {
         let modified_filename = filename.replace([' ', '-', '_'], ".").to_lowercase();
         if text_contains(&modified_filename, "atmos") {
             result.push(RsAudio::Atmos);
-        } 
+        }
         if text_contains(&modified_filename, "ddp5.1") {
             result.push(RsAudio::DDP51);
-        } 
+        }
         if text_contains(&modified_filename, "dtshd") {
             result.push(RsAudio::DTSHD);
-        } 
+        }
         if text_contains(&modified_filename, "dtsx") {
             result.push(RsAudio::DTSX);
-        } 
+        }
         if text_contains(&modified_filename, "dts") {
             result.push(RsAudio::DTS);
-        } 
-        if text_contains(&modified_filename, "ac35.1") || text_contains(&modified_filename, "ac3.5.1") {
+        }
+        if text_contains(&modified_filename, "ac35.1")
+            || text_contains(&modified_filename, "ac3.5.1")
+        {
             result.push(RsAudio::AC351);
         }
         result
     }
 }
 
-
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum VideoOverlayPosition {
-	TopLeft,
+    TopLeft,
     #[default]
     TopRight,
     BottomLeft,
     BottomRight,
     BottomCenter,
     TopCenter,
-    Center
+    Center,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum VideoAlignment {
     #[default]
@@ -236,26 +273,28 @@ pub enum VideoAlignment {
     Right,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum VideoOverlayType {
     #[default]
-	Watermark,
-    
+    Watermark,
+
     File,
 }
 
 impl VideoOverlayPosition {
     pub fn as_filter(&self, margin: f64) -> String {
         match self {
-            VideoOverlayPosition::TopLeft => format!("main_w*{}:main_h*{}",margin, margin),
+            VideoOverlayPosition::TopLeft => format!("main_w*{}:main_h*{}", margin, margin),
             VideoOverlayPosition::TopRight => format!("(main_w-w):min(main_h,main_w)*{}", margin),
             VideoOverlayPosition::BottomLeft => format!("main_w*{}:(main_h-h)", margin),
             VideoOverlayPosition::BottomRight => "(main_w-w):(main_h-h)".to_string(),
-            VideoOverlayPosition::BottomCenter => format!("main_w*{}:(main_h-h)", margin),//TODO
-            VideoOverlayPosition::TopCenter => format!("main_w*{}:main_h*{}",margin, margin), //TODO
-            VideoOverlayPosition::Center => format!("main_w*{}:main_h*{}",margin, margin), //TODO
+            VideoOverlayPosition::BottomCenter => format!("main_w*{}:(main_h-h)", margin), //TODO
+            VideoOverlayPosition::TopCenter => format!("main_w*{}:main_h*{}", margin, margin), //TODO
+            VideoOverlayPosition::Center => format!("main_w*{}:main_h*{}", margin, margin), //TODO
         }
     }
     pub fn as_ass_alignment(&self) -> String {
@@ -269,10 +308,7 @@ impl VideoOverlayPosition {
             VideoOverlayPosition::BottomRight => String::from("3"),
         }
     }
-
-
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 pub struct VideoConvertInterval {
@@ -296,7 +332,7 @@ pub struct VideoOverlay {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct VideoTextOverlay {
     pub text: String,
     pub font_color: Option<String>,
@@ -316,7 +352,7 @@ pub struct VideoTextOverlay {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct VideoConvertRequest {
     pub id: String,
     pub format: RsVideoFormat,
@@ -337,43 +373,50 @@ pub struct VideoConvertRequest {
     pub intervals: Vec<VideoConvertInterval>,
 }
 
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsVideoTranscodeJob {
     pub source: RsRequest,
     pub request: VideoConvertRequest,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsVideoTranscodeJobPluginRequest {
     pub job: RsVideoTranscodeJob,
     pub credentials: PluginCredential,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsVideoTranscodeJobPluginAction {
     pub job_id: String,
     pub credentials: PluginCredential,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsVideoTranscodeJobStatus {
     pub id: String,
     pub status: RsVideoTranscodeStatus,
     pub progress: f32,
 }
 
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, strum_macros::EnumString, Default)]
-#[serde(rename_all = "lowercase")] 
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    Clone,
+    PartialEq,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    Default,
+)]
+#[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "lowercase")]
 pub enum RsVideoTranscodeStatus {
     #[default]
     Pending,
-	Downloading,
+    Downloading,
     Queued,
     Processing,
     Completed,
@@ -382,7 +425,7 @@ pub enum RsVideoTranscodeStatus {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsVideoCapabilities {
     pub video_codecs: Vec<RsVideoCodec>,
     pub video_codecs_hw: Vec<RsVideoCodec>,
@@ -392,12 +435,21 @@ pub struct RsVideoCapabilities {
     pub max_concurrent_jobs: Option<u16>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, strum_macros::EnumString, Default)]
-#[serde(rename_all = "lowercase")] 
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    Clone,
+    PartialEq,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    Default,
+)]
+#[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "lowercase")]
 pub enum RsVideoTranscodeCancelResponse {
     #[default]
     NotFound,
-	Cancelled,
+    Cancelled,
     Error,
 }

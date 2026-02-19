@@ -3,8 +3,6 @@ use strum_macros::{Display, EnumString};
 
 use crate::RsRequest;
 
-
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Display, EnumString)]
 #[serde(rename_all = "camelCase")]
 pub enum ImageType {
@@ -14,7 +12,7 @@ pub enum ImageType {
     Card,
     ClearLogo,
     ClearArt,
-    Custom(String)
+    Custom(String),
 }
 
 impl ImageType {
@@ -26,10 +24,8 @@ impl ImageType {
             Some(kind) => kind.to_filename_element(),
             None => "".to_string(),
         }
-        
     }
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -45,11 +41,13 @@ pub struct ExternalImage {
     pub width: Option<i64>,
 }
 
-
 #[cfg(feature = "rusqlite")]
 pub mod external_images_rusqlite {
+    use rusqlite::{
+        types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef},
+        ToSql,
+    };
     use std::str::FromStr;
-    use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
 
     use super::{ExternalImage, ImageType};
 
@@ -75,12 +73,11 @@ pub mod external_images_rusqlite {
             })
         }
     }
-    
-    
+
     impl ToSql for ImageType {
         fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
             let l = (&self.clone()).to_string();
             Ok(ToSqlOutput::from(l))
         }
-    }    
+    }
 }

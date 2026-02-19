@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{Gender, domain::rs_ids::RsIds, url::RsLink};
+use crate::{domain::rs_ids::RsIds, url::RsLink, Gender};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]

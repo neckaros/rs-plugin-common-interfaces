@@ -7,9 +7,9 @@ use strum_macros::EnumString;
 pub mod rusqlite;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(rename_all = "snake_case")] 
+#[serde(rename_all = "snake_case")]
 pub struct RsLink {
-	pub platform: String,
+    pub platform: String,
     #[serde(rename = "type")]
     pub kind: Option<RsLinkType>,
     pub id: String,
@@ -22,11 +22,13 @@ pub struct RsLink {
     pub plugin: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
-#[serde(rename_all = "camelCase")] 
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
+#[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum RsLinkType {
-	Post,
+    Post,
     Profile,
     Video,
     Photo,
@@ -35,10 +37,8 @@ pub enum RsLinkType {
     Other,
 }
 
-
-
 impl From<(String, String)> for RsLink {
-    fn from((platform, id): (String, String)) -> Self {       
+    fn from((platform, id): (String, String)) -> Self {
         RsLink {
             platform,
             kind: None,
@@ -58,9 +58,7 @@ pub trait ToRsLinks {
 impl ToRsLinks for HashMap<String, Option<String>> {
     fn to_rs_links(self) -> Vec<RsLink> {
         self.into_iter()
-            .filter_map(|(platform, opt_id)| {
-                opt_id.map(|id| RsLink::from((platform, id)))
-            })
+            .filter_map(|(platform, opt_id)| opt_id.map(|id| RsLink::from((platform, id))))
             .collect()
     }
 }

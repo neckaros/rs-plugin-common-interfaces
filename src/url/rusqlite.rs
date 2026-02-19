@@ -1,9 +1,10 @@
 use std::str::FromStr;
 
 use crate::url::{RsLink, RsLinkType};
-use rusqlite::{types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef}, ToSql};
-
-
+use rusqlite::{
+    types::{FromSql, FromSqlError, FromSqlResult, ToSqlOutput, ValueRef},
+    ToSql,
+};
 
 impl FromSql for RsLink {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
@@ -30,11 +31,9 @@ impl FromSql for RsLinkType {
     }
 }
 
-
 impl ToSql for RsLinkType {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
         let l = (&self.clone()).to_string();
         Ok(ToSqlOutput::from(l))
     }
 }
-

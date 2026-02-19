@@ -10,16 +10,15 @@ use strum_macros::EnumString;
 
 use crate::RsRequest;
 
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsProviderPath {
     pub root: Option<String>,
     pub source: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsProviderAddRequest {
     pub root: String,
     pub name: String,
@@ -27,26 +26,28 @@ pub struct RsProviderAddRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsProviderAddResponse {
     pub request: RsRequest,
     pub multipart: Option<String>,
     pub source: Option<String>,
-    pub packets: Option<u64>
+    pub packets: Option<u64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display,EnumString, Default)]
+#[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
+)]
 #[strum(serialize_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub enum RsProviderEntryType {
     Directory,
     File,
     #[default]
-    Other
+    Other,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")] 
+#[serde(rename_all = "camelCase")]
 pub struct RsProviderEntry {
     pub source: String,
     pub kind: RsProviderEntryType,
@@ -62,6 +63,8 @@ pub struct RsProviderEntry {
 
 impl RsProviderEntry {
     pub fn mime_or_default(&self) -> String {
-        self.mimetype.clone().unwrap_or("application/octet-stream".to_string())
+        self.mimetype
+            .clone()
+            .unwrap_or("application/octet-stream".to_string())
     }
 }

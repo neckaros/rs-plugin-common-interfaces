@@ -34,6 +34,15 @@ pub enum MediaElement {
 pub struct ItemWithRelations<T> {
     #[serde(flatten)]
     pub book: T,
+    #[serde(flatten)]
+    pub relations: Relations,
+}
+
+
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Relations {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub people_details: Option<Vec<Person>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -43,4 +52,7 @@ pub struct ItemWithRelations<T> {
     pub people: Option<Vec<MediaItemReference>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<MediaItemReference>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ext_images: Option<Vec<crate::domain::external_images::ExternalImage>>,
 }

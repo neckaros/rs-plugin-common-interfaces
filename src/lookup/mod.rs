@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::domain::Relations;
 use crate::domain::book::Book;
 use crate::domain::episode::Episode;
 use crate::domain::media::Media;
@@ -115,11 +116,12 @@ pub enum RsLookupMetadataResult {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct RsLookupMetadataResultWithImages {
+pub struct RsLookupMetadataResultWrapper {
     pub metadata: RsLookupMetadataResult,
-    pub images: Vec<crate::domain::external_images::ExternalImage>,
-    pub lookup_tags: Option<Vec<String>>,
-    pub lookup_people: Option<Vec<String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relations: Option<Relations>,
+    
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

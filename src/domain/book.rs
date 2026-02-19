@@ -2,10 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::domain::{
-    other_ids::OtherIds,
-    person::Person,
-    rs_ids::{ApplyRsIds, RsIds},
-    tag::Tag,
+    media::MediaItemReference, other_ids::OtherIds, person::Person, rs_ids::{ApplyRsIds, RsIds}, tag::Tag
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
@@ -126,8 +123,18 @@ pub struct BookForUpdate {
     pub asin: Option<String>,
     pub otherids: Option<OtherIds>,
 
+    pub people_lookup: Option<Vec<Person>>,
+
+
     pub people: Option<Vec<Person>>,
     pub tags: Option<Vec<Tag>>,
+
+    pub add_tags: Option<Vec<MediaItemReference>>,
+    pub remove_tags: Option<Vec<String>>,
+    pub tags_lookup: Option<Vec<Tag>>,
+
+    pub add_people: Option<Vec<MediaItemReference>>,
+    pub remove_people: Option<Vec<String>>,
 }
 
 impl BookForUpdate {

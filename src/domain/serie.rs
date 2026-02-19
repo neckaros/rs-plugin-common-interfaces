@@ -2,7 +2,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use strum_macros::{Display, EnumString};
 
-use crate::domain::{other_ids::OtherIds, rs_ids::RsIds, tools::rating_serializer};
+use crate::domain::{
+    other_ids::OtherIds,
+    rs_ids::{ApplyRsIds, RsIds},
+    tools::rating_serializer,
+};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Display, EnumString)]
 #[serde(from = "String", into = "String")]
@@ -177,12 +181,53 @@ impl From<Serie> for RsIds {
     }
 }
 
+impl ApplyRsIds for Serie {
+    fn apply_rs_ids(&mut self, ids: &RsIds) {
+        if let Some(redseat) = ids.redseat.as_ref() {
+            self.id = redseat.clone();
+        }
+        if let Some(trakt) = ids.trakt {
+            self.trakt = Some(trakt);
+        }
+        if let Some(slug) = ids.slug.as_ref() {
+            self.slug = Some(slug.clone());
+        }
+        if let Some(tvdb) = ids.tvdb {
+            self.tvdb = Some(tvdb);
+        }
+        if let Some(imdb) = ids.imdb.as_ref() {
+            self.imdb = Some(imdb.clone());
+        }
+        if let Some(tmdb) = ids.tmdb {
+            self.tmdb = Some(tmdb);
+        }
+        if let Some(other_ids) = ids.other_ids.as_ref() {
+            self.otherids = Some(other_ids.clone());
+        }
+        if let Some(openlibrary_work_id) = ids.openlibrary_work_id.as_ref() {
+            self.openlibrary_work_id = Some(openlibrary_work_id.clone());
+        }
+        if let Some(anilist_manga_id) = ids.anilist_manga_id {
+            self.anilist_manga_id = Some(anilist_manga_id);
+        }
+        if let Some(mangadex_manga_uuid) = ids.mangadex_manga_uuid.as_ref() {
+            self.mangadex_manga_uuid = Some(mangadex_manga_uuid.clone());
+        }
+        if let Some(myanimelist_manga_id) = ids.myanimelist_manga_id {
+            self.myanimelist_manga_id = Some(myanimelist_manga_id);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;
 
     use super::{Serie, SerieType};
-    use crate::domain::other_ids::OtherIds;
+    use crate::domain::{
+        other_ids::OtherIds,
+        rs_ids::{ApplyRsIds, RsIds},
+    };
 
     #[test]
     fn serie_type_serde() {
@@ -240,5 +285,42 @@ mod tests {
             "otherids": "anidb:12"
         }));
         assert!(invalid.is_err());
+    }
+
+    #[test]
+    fn serie_apply_rs_ids_updates_only_present_values() {
+        let mut serie = Serie {
+            id: "serie-old".to_string(),
+            name: "Serie 1".to_string(),
+            tvdb: Some(500),
+            ..Default::default()
+        };
+        let ids = RsIds {
+            redseat: Some("serie-new".to_string()),
+            trakt: Some(101),
+            imdb: Some("tt0000101".to_string()),
+            tmdb: Some(201),
+            slug: Some("serie-slug".to_string()),
+            anilist_manga_id: Some(301),
+            mangadex_manga_uuid: Some("uuid-123".to_string()),
+            myanimelist_manga_id: Some(401),
+            openlibrary_work_id: Some("olw-123".to_string()),
+            other_ids: Some(OtherIds(vec!["anidb:1".to_string()])),
+            ..Default::default()
+        };
+
+        serie.apply_rs_ids(&ids);
+
+        assert_eq!(serie.id, "serie-new");
+        assert_eq!(serie.trakt, Some(101));
+        assert_eq!(serie.imdb.as_deref(), Some("tt0000101"));
+        assert_eq!(serie.tmdb, Some(201));
+        assert_eq!(serie.slug.as_deref(), Some("serie-slug"));
+        assert_eq!(serie.tvdb, Some(500));
+        assert_eq!(serie.anilist_manga_id, Some(301));
+        assert_eq!(serie.mangadex_manga_uuid.as_deref(), Some("uuid-123"));
+        assert_eq!(serie.myanimelist_manga_id, Some(401));
+        assert_eq!(serie.openlibrary_work_id.as_deref(), Some("olw-123"));
+        assert_eq!(serie.otherids, Some(OtherIds(vec!["anidb:1".to_string()])));
     }
 }

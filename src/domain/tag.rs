@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")] 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Tag {
     pub id: String,
-	pub name: String,
+    pub name: String,
     pub parent: Option<String>,
     #[serde(rename = "type")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -21,16 +21,14 @@ pub struct Tag {
     pub path: String,
 }
 
-
-
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TagForUpdate {
-	pub name: Option<String>,
+    pub name: Option<String>,
     pub parent: Option<String>,
     #[serde(rename = "type")]
     pub kind: Option<String>,
-    
+
     pub alt: Option<Vec<String>>,
     pub add_alts: Option<Vec<String>>,
     pub remove_alts: Option<Vec<String>>,
@@ -38,10 +36,9 @@ pub struct TagForUpdate {
     pub thumb: Option<String>,
     pub params: Option<Value>,
     pub generated: Option<bool>,
-    
+
     pub migrate_to: Option<String>,
 }
-
 
 impl Tag {
     pub fn full_path(&self) -> String {

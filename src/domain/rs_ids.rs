@@ -62,6 +62,10 @@ pub struct RsIds {
     pub asin: Option<String>,
 }
 
+pub trait ApplyRsIds {
+    fn apply_rs_ids(&mut self, ids: &RsIds);
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 enum RsDecimalKey {
     NegInf,
@@ -184,6 +188,10 @@ impl Ord for RsIds {
 }
 
 impl RsIds {
+    pub fn apply_to<T: ApplyRsIds>(&self, target: &mut T) {
+        target.apply_rs_ids(self);
+    }
+
     fn parse_manga_details(
         details: &[&str],
         value: &str,

@@ -1,4 +1,8 @@
-use crate::domain::{other_ids::OtherIds, rs_ids::RsIds, tools::rating_serializer};
+use crate::domain::{
+    other_ids::OtherIds,
+    rs_ids::{ApplyRsIds, RsIds},
+    tools::rating_serializer,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -76,10 +80,36 @@ impl From<Episode> for RsIds {
     }
 }
 
+impl ApplyRsIds for Episode {
+    fn apply_rs_ids(&mut self, ids: &RsIds) {
+        if let Some(trakt) = ids.trakt {
+            self.trakt = Some(trakt);
+        }
+        if let Some(slug) = ids.slug.as_ref() {
+            self.slug = Some(slug.clone());
+        }
+        if let Some(tvdb) = ids.tvdb {
+            self.tvdb = Some(tvdb);
+        }
+        if let Some(imdb) = ids.imdb.as_ref() {
+            self.imdb = Some(imdb.clone());
+        }
+        if let Some(tmdb) = ids.tmdb {
+            self.tmdb = Some(tmdb);
+        }
+        if let Some(other_ids) = ids.other_ids.as_ref() {
+            self.otherids = Some(other_ids.clone());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Episode;
-    use crate::domain::other_ids::OtherIds;
+    use crate::domain::{
+        other_ids::OtherIds,
+        rs_ids::{ApplyRsIds, RsIds},
+    };
     use serde_json::json;
 
     #[test]
@@ -110,5 +140,36 @@ mod tests {
             "otherids": "foo:bar"
         }));
         assert!(invalid.is_err());
+    }
+
+    #[test]
+    fn episode_apply_rs_ids_updates_only_present_values() {
+        let mut episode = Episode {
+            serie: "serie".to_string(),
+            season: 1,
+            number: 1,
+            tmdb: Some(22),
+            ..Default::default()
+        };
+        let ids = RsIds {
+            trakt: Some(55),
+            tvdb: Some(66),
+            imdb: Some("tt0000066".to_string()),
+            slug: Some("episode-slug".to_string()),
+            other_ids: Some(OtherIds(vec!["tvmaze:ep-1".to_string()])),
+            ..Default::default()
+        };
+
+        episode.apply_rs_ids(&ids);
+
+        assert_eq!(episode.trakt, Some(55));
+        assert_eq!(episode.tvdb, Some(66));
+        assert_eq!(episode.imdb.as_deref(), Some("tt0000066"));
+        assert_eq!(episode.slug.as_deref(), Some("episode-slug"));
+        assert_eq!(episode.tmdb, Some(22));
+        assert_eq!(
+            episode.otherids,
+            Some(OtherIds(vec!["tvmaze:ep-1".to_string()]))
+        );
     }
 }

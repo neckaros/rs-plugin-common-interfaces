@@ -1,7 +1,12 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::domain::{other_ids::OtherIds, person::Person, rs_ids::RsIds};
+use crate::domain::{
+    other_ids::OtherIds,
+    person::Person,
+    rs_ids::{ApplyRsIds, RsIds},
+    tag::Tag,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -66,6 +71,38 @@ impl From<Book> for RsIds {
     }
 }
 
+impl ApplyRsIds for Book {
+    fn apply_rs_ids(&mut self, ids: &RsIds) {
+        if let Some(redseat) = ids.redseat.as_ref() {
+            self.id = redseat.clone();
+        }
+        if let Some(isbn13) = ids.isbn13.as_ref() {
+            self.isbn13 = Some(isbn13.clone());
+        }
+        if let Some(openlibrary_edition_id) = ids.openlibrary_edition_id.as_ref() {
+            self.openlibrary_edition_id = Some(openlibrary_edition_id.clone());
+        }
+        if let Some(openlibrary_work_id) = ids.openlibrary_work_id.as_ref() {
+            self.openlibrary_work_id = Some(openlibrary_work_id.clone());
+        }
+        if let Some(google_books_volume_id) = ids.google_books_volume_id.as_ref() {
+            self.google_books_volume_id = Some(google_books_volume_id.clone());
+        }
+        if let Some(asin) = ids.asin.as_ref() {
+            self.asin = Some(asin.clone());
+        }
+        if let Some(other_ids) = ids.other_ids.as_ref() {
+            self.otherids = Some(other_ids.clone());
+        }
+        if let Some(volume) = ids.volume {
+            self.volume = Some(volume);
+        }
+        if let Some(chapter) = ids.chapter {
+            self.chapter = Some(chapter);
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct BookForUpdate {
@@ -90,6 +127,7 @@ pub struct BookForUpdate {
     pub otherids: Option<OtherIds>,
 
     pub people: Option<Vec<Person>>,
+    pub tags: Option<Vec<Tag>>,
 }
 
 impl BookForUpdate {
@@ -98,11 +136,13 @@ impl BookForUpdate {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::Book;
-    use crate::domain::other_ids::OtherIds;
+    use crate::domain::{
+        other_ids::OtherIds,
+        rs_ids::{ApplyRsIds, RsIds},
+    };
     use serde_json::json;
 
     #[test]
@@ -133,5 +173,41 @@ mod tests {
             "otherids": "custom:1"
         }));
         assert!(invalid.is_err());
+    }
+
+    #[test]
+    fn book_apply_rs_ids_updates_only_present_values() {
+        let mut book = Book {
+            id: "book-old".to_string(),
+            name: "Book 1".to_string(),
+            openlibrary_work_id: Some("olw-old".to_string()),
+            chapter: Some(7.0),
+            ..Default::default()
+        };
+        let ids = RsIds {
+            redseat: Some("book-new".to_string()),
+            isbn13: Some("9783161484100".to_string()),
+            openlibrary_edition_id: Some("ole-new".to_string()),
+            google_books_volume_id: Some("gb-1".to_string()),
+            asin: Some("B00TEST".to_string()),
+            other_ids: Some(OtherIds(vec!["goodreads:42".to_string()])),
+            volume: Some(3.0),
+            ..Default::default()
+        };
+
+        book.apply_rs_ids(&ids);
+
+        assert_eq!(book.id, "book-new");
+        assert_eq!(book.isbn13.as_deref(), Some("9783161484100"));
+        assert_eq!(book.openlibrary_edition_id.as_deref(), Some("ole-new"));
+        assert_eq!(book.openlibrary_work_id.as_deref(), Some("olw-old"));
+        assert_eq!(book.google_books_volume_id.as_deref(), Some("gb-1"));
+        assert_eq!(book.asin.as_deref(), Some("B00TEST"));
+        assert_eq!(
+            book.otherids,
+            Some(OtherIds(vec!["goodreads:42".to_string()]))
+        );
+        assert_eq!(book.volume, Some(3.0));
+        assert_eq!(book.chapter, Some(7.0));
     }
 }

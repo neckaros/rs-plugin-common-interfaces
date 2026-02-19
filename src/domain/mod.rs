@@ -11,8 +11,8 @@ pub mod other_ids;
 pub mod person;
 pub mod rs_ids;
 pub mod serie;
-pub mod tools;
 pub mod tag;
+pub mod tools;
 
 #[cfg(feature = "rusqlite")]
 pub mod rusqlite;

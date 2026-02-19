@@ -144,6 +144,7 @@ pub enum RsFileType {
     Video,
     Archive,
     Album,
+    Book,
     #[default]
     Other,
 }

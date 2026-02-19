@@ -33,7 +33,7 @@ pub enum MediaElement {
 #[serde(rename_all = "camelCase")]
 pub struct ItemWithRelations<T> {
     #[serde(flatten)]
-    pub book: T,
+    pub item: T,
     #[serde(flatten)]
     pub relations: Relations,
 }

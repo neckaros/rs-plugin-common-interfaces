@@ -8,6 +8,7 @@ use crate::domain::movie::Movie;
 use crate::domain::person::Person;
 use crate::domain::serie::Serie;
 use crate::PluginCredential;
+use crate::request::RsGroupDownload;
 use crate::{domain::rs_ids::RsIds, request::RsRequest};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
@@ -19,6 +20,7 @@ use strum_macros::EnumString;
 #[strum(serialize_all = "camelCase")]
 pub enum RsLookupSourceResult {
     Requests(Vec<RsRequest>),
+    GroupRequest(Vec<RsGroupDownload>),
     NotFound,
     #[default]
     NotApplicable,

@@ -123,11 +123,6 @@ pub struct BookForUpdate {
     pub asin: Option<String>,
     pub otherids: Option<OtherIds>,
 
-    pub people_lookup: Option<Vec<Person>>,
-
-
-    pub people: Option<Vec<Person>>,
-    pub tags: Option<Vec<Tag>>,
 
     pub add_tags: Option<Vec<MediaItemReference>>,
     pub remove_tags: Option<Vec<String>>,
@@ -135,6 +130,7 @@ pub struct BookForUpdate {
 
     pub add_people: Option<Vec<MediaItemReference>>,
     pub remove_people: Option<Vec<String>>,
+    pub people_lookup: Option<Vec<Person>>,
 }
 
 impl BookForUpdate {

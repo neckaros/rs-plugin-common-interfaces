@@ -198,12 +198,6 @@ pub struct Media {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub progress: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<MediaItemReference>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub series: Option<Vec<FileEpisode>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub people: Option<Vec<MediaItemReference>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub faces: Option<Vec<FaceEmbedding>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub backups: Option<Vec<BackupFile>>,
@@ -217,10 +211,6 @@ pub struct Media {
     pub iv: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub origin: Option<RsLink>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub movie: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub book: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lang: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

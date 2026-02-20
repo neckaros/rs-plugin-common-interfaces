@@ -53,8 +53,8 @@ pub struct Book {
 
 impl From<Book> for RsIds {
     fn from(value: Book) -> Self {
-        RsIds {
-            redseat: Some(value.id),
+
+        let mut ids = RsIds {
             isbn13: value.isbn13,
             openlibrary_edition_id: value.openlibrary_edition_id,
             openlibrary_work_id: value.openlibrary_work_id,
@@ -64,7 +64,15 @@ impl From<Book> for RsIds {
             volume: value.volume,
             chapter: value.chapter,
             ..Default::default()
+        };
+
+        if RsIds::is_id(&value.id) {
+            ids.try_add(value.id);
+        } else {
+            ids.redseat = Some(value.id);
         }
+        println!("Extracted ids from book: {:?}", ids);
+        ids
     }
 }
 

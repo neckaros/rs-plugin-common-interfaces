@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{media::MediaItemReference, person::Person, tag::Tag};
+use crate::domain::{media::{FileEpisode, MediaItemReference}, person::Person, tag::Tag};
 
 pub mod backup;
 pub mod book;
@@ -52,6 +52,9 @@ pub struct Relations {
     pub people: Option<Vec<MediaItemReference>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<MediaItemReference>>,
+    
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub series: Option<Vec<FileEpisode>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext_images: Option<Vec<crate::domain::external_images::ExternalImage>>,

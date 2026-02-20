@@ -63,6 +63,11 @@ pub struct Relations {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub movies_details: Option<Vec<Movie>>,
 
+        #[serde(skip_serializing_if = "Option::is_none")]
+    pub books: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub books_details: Option<Vec<book::Book>>,
+
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext_images: Option<Vec<crate::domain::external_images::ExternalImage>>,

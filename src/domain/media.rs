@@ -375,6 +375,114 @@ pub struct MediaForUpdate {
 }
 
 
+impl MediaForUpdate {
+    /// Merge `patch` into `self`.
+    ///
+    /// Semantics:
+    /// - For most `Option<T>` fields: overwrite only when `patch.field` is `Some`.
+    /// - For "list-like update" fields (`add_*`, `remove_*`, `*_lookup`): append vectors.
+    /// - For `ignore_origin_duplicate` (bool): OR (once true, stays true).
+    pub fn merge_from(&mut self, mut patch: Self) {
+        // Overwrite `dst` only if `src` is Some(..)
+        fn overwrite_if_some<T>(dst: &mut Option<T>, src: &mut Option<T>) {
+            if src.is_some() {
+                *dst = src.take();
+            }
+        }
+
+        // Append vectors when both sides are Some(vec).
+        // If `dst` is None, it becomes src (if any).
+        fn append_vec<T>(dst: &mut Option<Vec<T>>, src: &mut Option<Vec<T>>) {
+            match (dst.as_mut(), src.take()) {
+                (Some(d), Some(mut s)) => d.append(&mut s),
+                (None, Some(s)) => *dst = Some(s),
+                _ => {}
+            }
+        }
+
+        // ----- Scalar / metadata fields (overwrite-if-some) -----
+        overwrite_if_some(&mut self.name, &mut patch.name);
+        overwrite_if_some(&mut self.description, &mut patch.description);
+        overwrite_if_some(&mut self.mimetype, &mut patch.mimetype);
+        overwrite_if_some(&mut self.kind, &mut patch.kind);
+        overwrite_if_some(&mut self.size, &mut patch.size);
+
+        overwrite_if_some(&mut self.md5, &mut patch.md5);
+
+        overwrite_if_some(&mut self.modified, &mut patch.modified);
+        overwrite_if_some(&mut self.created, &mut patch.created);
+
+        overwrite_if_some(&mut self.width, &mut patch.width);
+        overwrite_if_some(&mut self.height, &mut patch.height);
+        overwrite_if_some(&mut self.orientation, &mut patch.orientation);
+        overwrite_if_some(&mut self.color_space, &mut patch.color_space);
+        overwrite_if_some(&mut self.icc, &mut patch.icc);
+        overwrite_if_some(&mut self.mp, &mut patch.mp);
+        overwrite_if_some(&mut self.vcodecs, &mut patch.vcodecs);
+        overwrite_if_some(&mut self.acodecs, &mut patch.acodecs);
+        overwrite_if_some(&mut self.fps, &mut patch.fps);
+        overwrite_if_some(&mut self.bitrate, &mut patch.bitrate);
+        overwrite_if_some(&mut self.focal, &mut patch.focal);
+        overwrite_if_some(&mut self.iso, &mut patch.iso);
+        overwrite_if_some(&mut self.model, &mut patch.model);
+        overwrite_if_some(&mut self.sspeed, &mut patch.sspeed);
+        overwrite_if_some(&mut self.f_number, &mut patch.f_number);
+
+        overwrite_if_some(&mut self.pages, &mut patch.pages);
+        overwrite_if_some(&mut self.duration, &mut patch.duration);
+        overwrite_if_some(&mut self.progress, &mut patch.progress);
+
+        overwrite_if_some(&mut self.season, &mut patch.season);
+        overwrite_if_some(&mut self.episode, &mut patch.episode);
+
+        overwrite_if_some(&mut self.long, &mut patch.long);
+        overwrite_if_some(&mut self.lat, &mut patch.lat);
+        overwrite_if_some(&mut self.gps, &mut patch.gps);
+
+        overwrite_if_some(&mut self.origin, &mut patch.origin);
+        overwrite_if_some(&mut self.origin_url, &mut patch.origin_url);
+
+        overwrite_if_some(&mut self.movie, &mut patch.movie);
+        overwrite_if_some(&mut self.book, &mut patch.book);
+
+        overwrite_if_some(&mut self.lang, &mut patch.lang);
+        overwrite_if_some(&mut self.rating, &mut patch.rating);
+
+        overwrite_if_some(&mut self.thumbsize, &mut patch.thumbsize);
+        overwrite_if_some(&mut self.iv, &mut patch.iv);
+
+        overwrite_if_some(&mut self.uploader, &mut patch.uploader);
+        overwrite_if_some(&mut self.uploadkey, &mut patch.uploadkey);
+        overwrite_if_some(&mut self.upload_id, &mut patch.upload_id);
+
+        overwrite_if_some(&mut self.original_hash, &mut patch.original_hash);
+        overwrite_if_some(&mut self.original_id, &mut patch.original_id);
+
+        // ----- List-like update fields (append) -----
+        append_vec(&mut self.add_tags, &mut patch.add_tags);
+        append_vec(&mut self.remove_tags, &mut patch.remove_tags);
+        append_vec(&mut self.tags_lookup, &mut patch.tags_lookup);
+
+        append_vec(&mut self.add_series, &mut patch.add_series);
+        append_vec(&mut self.remove_series, &mut patch.remove_series);
+        append_vec(&mut self.series_lookup, &mut patch.series_lookup);
+
+        append_vec(&mut self.add_people, &mut patch.add_people);
+        append_vec(&mut self.remove_people, &mut patch.remove_people);
+        append_vec(&mut self.people_lookup, &mut patch.people_lookup);
+
+        // ----- Non-Option field -----
+        self.ignore_origin_duplicate |= patch.ignore_origin_duplicate;
+    }
+
+    /// Convenience: returns a merged value without mutating the original.
+    pub fn merged(mut self, patch: Self) -> Self {
+        self.merge_from(patch);
+        self
+    }
+}
+
+
 impl From<Media> for MediaForUpdate {
     fn from(value: Media) -> Self {
         MediaForUpdate {

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::url::RsLink;
+use crate::{RsRequest, url::RsLink};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use strum_macros::EnumString;
@@ -290,3 +290,150 @@ pub struct FaceBBox {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub video_percent: Option<u32>, // Percent (0-100) of video where face was detected
 }
+
+
+
+
+
+
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaForUpdate {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub mimetype: Option<String>,
+    pub kind: Option<FileType>,
+    pub size: Option<u64>,
+
+    pub md5: Option<String>,
+
+    pub modified: Option<i64>,
+    pub created: Option<i64>,
+
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub orientation: Option<u8>,
+    pub color_space: Option<String>,
+    pub icc: Option<String>,
+    pub mp: Option<u32>,
+    pub vcodecs: Option<Vec<String>>,
+    pub acodecs: Option<Vec<String>>,
+    pub fps: Option<f64>,
+    pub bitrate: Option<u64>,
+    pub focal: Option<u64>,
+    pub iso: Option<u64>,
+    pub model: Option<String>,
+    pub sspeed: Option<String>,
+    pub f_number: Option<f64>,
+
+    pub pages: Option<usize>,
+
+    pub duration: Option<u64>,
+
+    pub progress: Option<usize>,
+
+    pub add_tags: Option<Vec<MediaItemReference>>,
+    pub remove_tags: Option<Vec<String>>,
+    pub tags_lookup: Option<Vec<String>>,
+
+    pub add_series: Option<Vec<FileEpisode>>,
+    pub remove_series: Option<Vec<FileEpisode>>,
+    pub series_lookup: Option<Vec<String>>,
+    pub season: Option<u32>,
+    pub episode: Option<u32>,
+
+    pub add_people: Option<Vec<MediaItemReference>>,
+    pub remove_people: Option<Vec<String>>,
+    pub people_lookup: Option<Vec<String>>,
+
+    pub long: Option<f64>,
+    pub lat: Option<f64>,
+    pub gps: Option<String>,
+
+    pub origin: Option<RsLink>,
+    pub origin_url: Option<String>,
+    #[serde(default)]
+    pub ignore_origin_duplicate: bool,
+
+    pub movie: Option<String>,
+    pub book: Option<String>,
+
+    pub lang: Option<String>,
+
+    pub rating: Option<u16>,
+
+    pub thumbsize: Option<usize>,
+    pub iv: Option<String>,
+
+    pub uploader: Option<String>,
+    pub uploadkey: Option<String>,
+    pub upload_id: Option<String>,
+
+    pub original_hash: Option<String>,
+    pub original_id: Option<String>,
+}
+
+
+impl From<Media> for MediaForUpdate {
+    fn from(value: Media) -> Self {
+        MediaForUpdate {
+            description: value.description,
+            add_people: None,
+            add_tags: None,
+            long: value.long,
+            lat: value.lat,
+            created: value.created,
+            origin: value.origin,
+            add_series: None,
+            pages: value.pages,
+            original_hash: value.original_hash.or(value.md5),
+            original_id: Some(value.original_id.unwrap_or(value.id)),
+            book: None,
+            ..Default::default()
+        }
+    }
+}
+
+impl From<RsRequest> for MediaForUpdate {
+    fn from(value: RsRequest) -> Self {
+        // Build add_series from albums (first entry) + season + episode if albums are provided
+        let (add_series, season, episode) = if let Some(albums) = &value.albums {
+            if let Some(serie_id) = albums.first() {
+                // Have direct serie ID - use add_series, don't need season/episode at top level
+                (
+                    Some(vec![FileEpisode {
+                        id: serie_id.clone(),
+                        season: value.season,
+                        episode: value.episode,
+                        episode_to: None,
+                    }]),
+                    None,
+                    None,
+                )
+            } else {
+                (None, value.season, value.episode)
+            }
+        } else {
+            // No direct album IDs - keep season/episode for series_lookup pairing
+            (None, value.season, value.episode)
+        };
+
+        MediaForUpdate {
+            name: value.filename_or_extract_from_url(),
+            description: value.description,
+            ignore_origin_duplicate: value.ignore_origin_duplicate,
+            size: value.size,
+            // Use the new lookup fields for database text search
+            people_lookup: value.people_lookup,
+            tags_lookup: value.tags_lookup,
+            series_lookup: value.albums_lookup,
+            add_series,
+            movie: value.movie,
+            season,
+            episode,
+            ..Default::default()
+        }
+    }
+}
+

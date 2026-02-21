@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use crate::domain::media::FileEpisode;
+use crate::domain::media::{FileEpisode, Media, MediaForUpdate};
 use crate::{PluginCredential, RsFileType, RsVideoFormat};
 use crate::{RsAudio, RsResolution, RsVideoCodec};
 use regex::Regex;
@@ -450,6 +450,9 @@ pub struct RsGroupDownload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group_mime: Option<String>,
     pub requests: Vec<RsRequest>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub infos: Option<MediaForUpdate>,
 }
 
 /// Status of a processing task added via request_add

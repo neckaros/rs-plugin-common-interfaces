@@ -37,6 +37,10 @@ pub struct TagForUpdate {
     pub add_alts: Option<Vec<String>>,
     pub remove_alts: Option<Vec<String>>,
 
+
+    pub add_otherids: Option<Vec<String>>,
+    pub remove_otherids: Option<Vec<String>>,
+
     pub thumb: Option<String>,
     pub params: Option<Value>,
     pub generated: Option<bool>,

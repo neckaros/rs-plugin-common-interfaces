@@ -516,11 +516,8 @@ impl RsIds {
         }
     }
 
-    pub fn as_all_other_ids(&self) -> OtherIds {
+    pub fn as_all_external_ids(&self) -> Vec<String> {
         let mut ids = vec![];
-        if let Some(id) = self.as_redseat() {
-            ids.push(id)
-        }
         if let Some(id) = self.as_imdb() {
             ids.push(id)
         }
@@ -559,6 +556,14 @@ impl RsIds {
         }
         if let Some(other_ids) = self.other_ids.as_ref() {
             ids.extend(other_ids.as_slice().iter().cloned());
+        }
+        ids
+    }
+
+    pub fn as_all_other_ids(&self) -> OtherIds {
+        let mut ids = self.as_all_external_ids();
+        if let Some(id) = self.as_redseat() {
+            ids.insert(0, id);
         }
         OtherIds(ids)
     }

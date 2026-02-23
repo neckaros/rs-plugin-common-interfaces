@@ -66,9 +66,7 @@ impl From<Book> for RsIds {
             ..Default::default()
         };
 
-        if RsIds::is_id(&value.id) {
-            ids.try_add(value.id);
-        } else {
+        if ids.try_add(value.id.clone()).is_err() {
             ids.redseat = Some(value.id);
         }
         println!("Extracted ids from book: {:?}", ids);

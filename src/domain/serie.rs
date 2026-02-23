@@ -163,8 +163,7 @@ pub struct Serie {
 
 impl From<Serie> for RsIds {
     fn from(value: Serie) -> Self {
-        RsIds {
-            redseat: Some(value.id),
+        let mut ids = RsIds {
             trakt: value.trakt,
             slug: value.slug,
             tvdb: value.tvdb,
@@ -174,10 +173,13 @@ impl From<Serie> for RsIds {
             mangadex_manga_uuid: value.mangadex_manga_uuid,
             myanimelist_manga_id: value.myanimelist_manga_id,
             openlibrary_work_id: value.openlibrary_work_id,
-            tvrage: None,
             other_ids: value.otherids,
             ..Default::default()
+        };
+        if ids.try_add(value.id.clone()).is_err() {
+            ids.redseat = Some(value.id);
         }
+        ids
     }
 }
 

@@ -38,6 +38,7 @@ pub struct TagForUpdate {
     pub remove_alts: Option<Vec<String>>,
 
 
+    pub otherids: Option<OtherIds>,
     pub add_otherids: Option<Vec<String>>,
     pub remove_otherids: Option<Vec<String>>,
 
@@ -46,7 +47,6 @@ pub struct TagForUpdate {
     pub generated: Option<bool>,
 
     pub migrate_to: Option<String>,
-    pub otherids: Option<OtherIds>,
 }
 
 impl Tag {

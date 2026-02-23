@@ -66,17 +66,20 @@ impl Episode {
 
 impl From<Episode> for RsIds {
     fn from(value: Episode) -> Self {
-        RsIds {
-            redseat: Some(value.id()),
+        let id = value.id();
+        let mut ids = RsIds {
             trakt: value.trakt,
             slug: value.slug,
             tvdb: value.tvdb,
             imdb: value.imdb,
             tmdb: value.tmdb,
-            tvrage: None,
             other_ids: value.otherids,
             ..Default::default()
+        };
+        if ids.try_add(id.clone()).is_err() {
+            ids.redseat = Some(id);
         }
+        ids
     }
 }
 

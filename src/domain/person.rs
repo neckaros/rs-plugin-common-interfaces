@@ -41,16 +41,17 @@ pub struct Person {
 
 impl From<Person> for RsIds {
     fn from(value: Person) -> Self {
-        RsIds {
-            redseat: Some(value.id),
+        let mut ids = RsIds {
             trakt: value.trakt,
             slug: value.slug,
-            tvdb: None,
             imdb: value.imdb,
             tmdb: value.tmdb,
-            tvrage: None,
             other_ids: value.otherids,
             ..Default::default()
+        };
+        if ids.try_add(value.id.clone()).is_err() {
+            ids.redseat = Some(value.id);
         }
+        ids
     }
 }

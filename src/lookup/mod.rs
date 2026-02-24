@@ -31,6 +31,11 @@ pub enum RsLookupSourceResult {
 pub struct RsLookupPerson {
     pub name: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
+
+    
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -38,6 +43,9 @@ pub struct RsLookupPerson {
 pub struct RsLookupSerie {
     pub name: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -45,6 +53,9 @@ pub struct RsLookupSerie {
 pub struct RsLookupSerieSeason {
     pub name: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -55,6 +66,9 @@ pub struct RsLookupEpisode {
 
     pub season: u32,
     pub number: Option<u32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -62,6 +76,9 @@ pub struct RsLookupEpisode {
 pub struct RsLookupBook {
     pub name: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -70,6 +87,9 @@ pub struct RsLookupSong {
     pub author: Option<String>,
     pub album: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -77,6 +97,9 @@ pub struct RsLookupSong {
 pub struct RsLookupMedia {
     pub search: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -84,6 +107,9 @@ pub struct RsLookupMedia {
 pub struct RsLookupMovie {
     pub name: Option<String>,
     pub ids: Option<RsIds>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString)]

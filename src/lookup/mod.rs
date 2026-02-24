@@ -118,6 +118,16 @@ pub enum RsLookupMetadataResult {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
+pub struct RsLookupMetadataResults {
+    pub results: Vec<RsLookupMetadataResultWrapper>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_page_key: Option<String>,
+    
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct RsLookupMetadataResultWrapper {
     pub metadata: RsLookupMetadataResult,
 

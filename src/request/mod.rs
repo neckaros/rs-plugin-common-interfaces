@@ -1,7 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use crate::domain::media::{FileEpisode, Media, MediaForUpdate};
-use crate::{PluginCredential, RsFileType, RsVideoFormat};
+use crate::{CustomParamTypes, PluginCredential, RsFileType, RsVideoFormat};
 use crate::{RsAudio, RsResolution, RsVideoCodec};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -433,7 +433,7 @@ impl RsRequestFiles {
 pub struct RsRequestPluginRequest {
     pub request: RsRequest,
     pub credential: Option<PluginCredential>,
-    pub params: Option<HashMap<String, String>>,
+    pub params: Option<HashMap<String, CustomParamTypes>>,
 }
 
 /// Groups multiple download requests together, optionally combining them into a single media item
@@ -514,7 +514,7 @@ pub struct RsProcessingActionRequest {
     /// Credential for the plugin
     pub credential: Option<PluginCredential>,
     /// Optional params
-    pub params: Option<HashMap<String, String>>,
+    pub params: Option<HashMap<String, CustomParamTypes>>,
 }
 
 #[cfg(test)]

@@ -7,7 +7,7 @@ use crate::domain::media::Media;
 use crate::domain::movie::Movie;
 use crate::domain::person::Person;
 use crate::domain::serie::Serie;
-use crate::PluginCredential;
+use crate::{CustomParamTypes, PluginCredential};
 use crate::request::RsGroupDownload;
 use crate::{domain::rs_ids::RsIds, request::RsRequest};
 use serde::{Deserialize, Serialize};
@@ -167,5 +167,5 @@ pub struct RsLookupMetadataResultWrapper {
 pub struct RsLookupWrapper {
     pub query: RsLookupQuery,
     pub credential: Option<PluginCredential>,
-    pub params: Option<HashMap<String, String>>,
+    pub params: Option<HashMap<String, CustomParamTypes>>,
 }

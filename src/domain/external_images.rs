@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
 use crate::RsRequest;
+use crate::lookup::RsLookupMatchType;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Display, EnumString)]
 #[serde(rename_all = "camelCase")]
@@ -39,6 +40,9 @@ pub struct ExternalImage {
     pub vote_average: Option<f64>,
     pub vote_count: Option<i64>,
     pub width: Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub match_type: Option<RsLookupMatchType>,
 }
 
 #[cfg(feature = "rusqlite")]

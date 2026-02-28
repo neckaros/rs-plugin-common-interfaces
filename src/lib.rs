@@ -8,8 +8,9 @@ pub use domain::{
     other_ids::OtherIds,
 };
 pub use lookup::{
-    RsLookupBook, RsLookupEpisode, RsLookupMedia, RsLookupMovie, RsLookupPerson, RsLookupQuery,
-    RsLookupSerie, RsLookupSerieSeason, RsLookupSong, RsLookupSourceResult, RsLookupWrapper,
+    RsLookupBook, RsLookupEpisode, RsLookupMatchType, RsLookupMedia, RsLookupMovie,
+    RsLookupPerson, RsLookupQuery, RsLookupSerie, RsLookupSerieSeason, RsLookupSong,
+    RsLookupSourceResult, RsLookupWrapper,
 };
 pub use request::{
     RsCookie, RsCookies, RsRequest, RsRequestFiles, RsRequestPluginRequest, RsRequestStatus,

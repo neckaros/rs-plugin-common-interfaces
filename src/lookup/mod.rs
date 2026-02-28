@@ -127,6 +127,16 @@ pub enum RsLookupQuery {
 }
 
 #[derive(
+    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString,
+)]
+#[serde(rename_all = "camelCase")]
+#[strum(serialize_all = "camelCase")]
+pub enum RsLookupMatchType {
+    ExactId,
+    ExactText,
+}
+
+#[derive(
     Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString, Default,
 )]
 #[serde(rename_all = "camelCase")]
@@ -159,7 +169,10 @@ pub struct RsLookupMetadataResultWrapper {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relations: Option<Relations>,
-    
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub match_type: Option<RsLookupMatchType>,
+
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

@@ -373,6 +373,39 @@ impl RsIds {
             .ok_or_else(|| RsIdsError::NoMediaIdRequired(Box::new(self.clone())))
     }
 
+    // -- Matching & merging --
+
+    /// Check if two instances share at least one common ID (same key AND same value).
+    /// Uses a merge-join on the sorted iterators for O(n + m) with zero allocations.
+    pub fn has_common_id(&self, other: &RsIds) -> bool {
+        let mut a = self.0.iter();
+        let mut b = other.0.iter();
+        let mut pair_a = a.next();
+        let mut pair_b = b.next();
+        while let (Some((ka, va)), Some((kb, vb))) = (pair_a, pair_b) {
+            match ka.cmp(kb) {
+                std::cmp::Ordering::Less => pair_a = a.next(),
+                std::cmp::Ordering::Greater => pair_b = b.next(),
+                std::cmp::Ordering::Equal => {
+                    if va == vb {
+                        return true;
+                    }
+                    pair_a = a.next();
+                    pair_b = b.next();
+                }
+            }
+        }
+        false
+    }
+
+    /// Merge entries from `other` into `self`. Existing entries in `self` are preserved
+    /// (self takes priority on key conflicts).
+    pub fn merge(&mut self, other: &RsIds) {
+        for (k, v) in &other.0 {
+            self.0.entry(k.clone()).or_insert_with(|| v.clone());
+        }
+    }
+
     /// Apply these IDs to a target that implements `ApplyRsIds`.
     pub fn apply_to<T: ApplyRsIds>(&self, target: &mut T) {
         target.apply_rs_ids(self);
@@ -833,6 +866,97 @@ mod tests {
         let mut ids = RsIds::default();
         ids.set("volume", "3.0");
         assert_eq!(ids.find_detail_f64("volume"), Some(3.0));
+    }
+
+    #[test]
+    fn test_has_common_id_match() {
+        let mut a = RsIds::default();
+        a.set("imdb", "tt1234567");
+        a.set("tmdb", "42");
+
+        let mut b = RsIds::default();
+        b.set("trakt", "999");
+        b.set("tmdb", "42");
+
+        assert!(a.has_common_id(&b));
+    }
+
+    #[test]
+    fn test_has_common_id_same_key_different_value() {
+        let mut a = RsIds::default();
+        a.set("tmdb", "42");
+
+        let mut b = RsIds::default();
+        b.set("tmdb", "99");
+
+        assert!(!a.has_common_id(&b));
+    }
+
+    #[test]
+    fn test_has_common_id_no_overlap() {
+        let mut a = RsIds::default();
+        a.set("imdb", "tt123");
+
+        let mut b = RsIds::default();
+        b.set("trakt", "456");
+
+        assert!(!a.has_common_id(&b));
+    }
+
+    #[test]
+    fn test_has_common_id_empty() {
+        let a = RsIds::default();
+        let mut b = RsIds::default();
+        b.set("imdb", "tt123");
+
+        assert!(!a.has_common_id(&b));
+        assert!(!b.has_common_id(&a));
+        assert!(!a.has_common_id(&a));
+    }
+
+    #[test]
+    fn test_merge_priority() {
+        let mut a = RsIds::default();
+        a.set("imdb", "tt111");
+        a.set("tmdb", "42");
+
+        let mut b = RsIds::default();
+        b.set("imdb", "tt222");
+        b.set("trakt", "999");
+
+        a.merge(&b);
+        assert_eq!(a.imdb(), Some("tt111")); // self wins
+        assert_eq!(a.tmdb(), Some(42));
+        assert_eq!(a.trakt(), Some(999)); // added from other
+    }
+
+    #[test]
+    fn test_merge_adds_missing() {
+        let mut a = RsIds::default();
+        a.set("imdb", "tt123");
+
+        let mut b = RsIds::default();
+        b.set("trakt", "456");
+        b.set("tmdb", "789");
+
+        a.merge(&b);
+        assert_eq!(a.len(), 3);
+        assert_eq!(a.trakt(), Some(456));
+        assert_eq!(a.tmdb(), Some(789));
+    }
+
+    #[test]
+    fn test_merge_empty() {
+        let mut a = RsIds::default();
+        a.set("imdb", "tt123");
+
+        let empty = RsIds::default();
+        a.merge(&empty);
+        assert_eq!(a.len(), 1);
+
+        let mut b = RsIds::default();
+        b.merge(&a);
+        assert_eq!(b.imdb(), Some("tt123"));
     }
 
     #[cfg(feature = "rusqlite")]

@@ -163,21 +163,23 @@ pub struct Serie {
 
 impl From<Serie> for RsIds {
     fn from(value: Serie) -> Self {
-        let mut ids = RsIds {
-            trakt: value.trakt,
-            slug: value.slug,
-            tvdb: value.tvdb,
-            imdb: value.imdb,
-            tmdb: value.tmdb,
-            anilist_manga_id: value.anilist_manga_id,
-            mangadex_manga_uuid: value.mangadex_manga_uuid,
-            myanimelist_manga_id: value.myanimelist_manga_id,
-            openlibrary_work_id: value.openlibrary_work_id,
-            other_ids: value.otherids,
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        if let Some(v) = value.trakt { ids.set("trakt", v); }
+        if let Some(v) = value.slug { ids.set("slug", v); }
+        if let Some(v) = value.tvdb { ids.set("tvdb", v); }
+        if let Some(v) = value.imdb { ids.set("imdb", v); }
+        if let Some(v) = value.tmdb { ids.set("tmdb", v); }
+        if let Some(v) = value.anilist_manga_id { ids.set("anilist", v); }
+        if let Some(v) = value.mangadex_manga_uuid { ids.set("mangadex", v); }
+        if let Some(v) = value.myanimelist_manga_id { ids.set("mal", v); }
+        if let Some(v) = value.openlibrary_work_id { ids.set("olwid", v); }
+        if let Some(other) = value.otherids {
+            for entry in other.into_vec() {
+                let _ = ids.try_add(entry);
+            }
+        }
         if ids.try_add(value.id.clone()).is_err() {
-            ids.redseat = Some(value.id);
+            ids.set("redseat", value.id);
         }
         ids
     }
@@ -185,38 +187,35 @@ impl From<Serie> for RsIds {
 
 impl ApplyRsIds for Serie {
     fn apply_rs_ids(&mut self, ids: &RsIds) {
-        if let Some(redseat) = ids.redseat.as_ref() {
-            self.id = redseat.clone();
+        if let Some(redseat) = ids.redseat() {
+            self.id = redseat.to_string();
         }
-        if let Some(trakt) = ids.trakt {
+        if let Some(trakt) = ids.trakt() {
             self.trakt = Some(trakt);
         }
-        if let Some(slug) = ids.slug.as_ref() {
-            self.slug = Some(slug.clone());
+        if let Some(slug) = ids.slug() {
+            self.slug = Some(slug.to_string());
         }
-        if let Some(tvdb) = ids.tvdb {
+        if let Some(tvdb) = ids.tvdb() {
             self.tvdb = Some(tvdb);
         }
-        if let Some(imdb) = ids.imdb.as_ref() {
-            self.imdb = Some(imdb.clone());
+        if let Some(imdb) = ids.imdb() {
+            self.imdb = Some(imdb.to_string());
         }
-        if let Some(tmdb) = ids.tmdb {
+        if let Some(tmdb) = ids.tmdb() {
             self.tmdb = Some(tmdb);
         }
-        if let Some(other_ids) = ids.other_ids.as_ref() {
-            self.otherids = Some(other_ids.clone());
+        if let Some(olwid) = ids.openlibrary_work_id() {
+            self.openlibrary_work_id = Some(olwid.to_string());
         }
-        if let Some(openlibrary_work_id) = ids.openlibrary_work_id.as_ref() {
-            self.openlibrary_work_id = Some(openlibrary_work_id.clone());
+        if let Some(anilist) = ids.anilist_manga_id() {
+            self.anilist_manga_id = Some(anilist);
         }
-        if let Some(anilist_manga_id) = ids.anilist_manga_id {
-            self.anilist_manga_id = Some(anilist_manga_id);
+        if let Some(mangadex) = ids.mangadex_manga_uuid() {
+            self.mangadex_manga_uuid = Some(mangadex.to_string());
         }
-        if let Some(mangadex_manga_uuid) = ids.mangadex_manga_uuid.as_ref() {
-            self.mangadex_manga_uuid = Some(mangadex_manga_uuid.clone());
-        }
-        if let Some(myanimelist_manga_id) = ids.myanimelist_manga_id {
-            self.myanimelist_manga_id = Some(myanimelist_manga_id);
+        if let Some(mal) = ids.myanimelist_manga_id() {
+            self.myanimelist_manga_id = Some(mal);
         }
     }
 }
@@ -297,19 +296,16 @@ mod tests {
             tvdb: Some(500),
             ..Default::default()
         };
-        let ids = RsIds {
-            redseat: Some("serie-new".to_string()),
-            trakt: Some(101),
-            imdb: Some("tt0000101".to_string()),
-            tmdb: Some(201),
-            slug: Some("serie-slug".to_string()),
-            anilist_manga_id: Some(301),
-            mangadex_manga_uuid: Some("uuid-123".to_string()),
-            myanimelist_manga_id: Some(401),
-            openlibrary_work_id: Some("olw-123".to_string()),
-            other_ids: Some(OtherIds(vec!["anidb:1".to_string()])),
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        ids.set("redseat", "serie-new");
+        ids.set("trakt", 101u64);
+        ids.set("imdb", "tt0000101");
+        ids.set("tmdb", 201u64);
+        ids.set("slug", "serie-slug");
+        ids.set("anilist", 301u64);
+        ids.set("mangadex", "uuid-123");
+        ids.set("mal", 401u64);
+        ids.set("olwid", "olw-123");
 
         serie.apply_rs_ids(&ids);
 
@@ -323,6 +319,5 @@ mod tests {
         assert_eq!(serie.mangadex_manga_uuid.as_deref(), Some("uuid-123"));
         assert_eq!(serie.myanimelist_manga_id, Some(401));
         assert_eq!(serie.openlibrary_work_id.as_deref(), Some("olw-123"));
-        assert_eq!(serie.otherids, Some(OtherIds(vec!["anidb:1".to_string()])));
     }
 }

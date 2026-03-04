@@ -53,54 +53,50 @@ pub struct Book {
 
 impl From<Book> for RsIds {
     fn from(value: Book) -> Self {
-
-        let mut ids = RsIds {
-            isbn13: value.isbn13,
-            openlibrary_edition_id: value.openlibrary_edition_id,
-            openlibrary_work_id: value.openlibrary_work_id,
-            google_books_volume_id: value.google_books_volume_id,
-            asin: value.asin,
-            other_ids: value.otherids,
-            volume: value.volume,
-            chapter: value.chapter,
-            ..Default::default()
-        };
-
-        if ids.try_add(value.id.clone()).is_err() {
-            ids.redseat = Some(value.id);
+        let mut ids = RsIds::default();
+        if let Some(v) = value.isbn13 { ids.set("isbn13", v); }
+        if let Some(v) = value.openlibrary_edition_id { ids.set("oleid", v); }
+        if let Some(v) = value.openlibrary_work_id { ids.set("olwid", v); }
+        if let Some(v) = value.google_books_volume_id { ids.set("gbvid", v); }
+        if let Some(v) = value.asin { ids.set("asin", v); }
+        if let Some(v) = value.volume { ids.set("volume", v); }
+        if let Some(v) = value.chapter { ids.set("chapter", v); }
+        if let Some(other) = value.otherids {
+            for entry in other.into_vec() {
+                let _ = ids.try_add(entry);
+            }
         }
-        println!("Extracted ids from book: {:?}", ids);
+        if ids.try_add(value.id.clone()).is_err() {
+            ids.set("redseat", value.id);
+        }
         ids
     }
 }
 
 impl ApplyRsIds for Book {
     fn apply_rs_ids(&mut self, ids: &RsIds) {
-        if let Some(redseat) = ids.redseat.as_ref() {
-            self.id = redseat.clone();
+        if let Some(redseat) = ids.redseat() {
+            self.id = redseat.to_string();
         }
-        if let Some(isbn13) = ids.isbn13.as_ref() {
-            self.isbn13 = Some(isbn13.clone());
+        if let Some(isbn13) = ids.isbn13() {
+            self.isbn13 = Some(isbn13.to_string());
         }
-        if let Some(openlibrary_edition_id) = ids.openlibrary_edition_id.as_ref() {
-            self.openlibrary_edition_id = Some(openlibrary_edition_id.clone());
+        if let Some(oleid) = ids.openlibrary_edition_id() {
+            self.openlibrary_edition_id = Some(oleid.to_string());
         }
-        if let Some(openlibrary_work_id) = ids.openlibrary_work_id.as_ref() {
-            self.openlibrary_work_id = Some(openlibrary_work_id.clone());
+        if let Some(olwid) = ids.openlibrary_work_id() {
+            self.openlibrary_work_id = Some(olwid.to_string());
         }
-        if let Some(google_books_volume_id) = ids.google_books_volume_id.as_ref() {
-            self.google_books_volume_id = Some(google_books_volume_id.clone());
+        if let Some(gbvid) = ids.google_books_volume_id() {
+            self.google_books_volume_id = Some(gbvid.to_string());
         }
-        if let Some(asin) = ids.asin.as_ref() {
-            self.asin = Some(asin.clone());
+        if let Some(asin) = ids.asin() {
+            self.asin = Some(asin.to_string());
         }
-        if let Some(other_ids) = ids.other_ids.as_ref() {
-            self.otherids = Some(other_ids.clone());
-        }
-        if let Some(volume) = ids.volume {
+        if let Some(volume) = ids.find_detail_f64("volume") {
             self.volume = Some(volume);
         }
-        if let Some(chapter) = ids.chapter {
+        if let Some(chapter) = ids.find_detail_f64("chapter") {
             self.chapter = Some(chapter);
         }
     }
@@ -193,16 +189,13 @@ mod tests {
             chapter: Some(7.0),
             ..Default::default()
         };
-        let ids = RsIds {
-            redseat: Some("book-new".to_string()),
-            isbn13: Some("9783161484100".to_string()),
-            openlibrary_edition_id: Some("ole-new".to_string()),
-            google_books_volume_id: Some("gb-1".to_string()),
-            asin: Some("B00TEST".to_string()),
-            other_ids: Some(OtherIds(vec!["goodreads:42".to_string()])),
-            volume: Some(3.0),
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        ids.set("redseat", "book-new");
+        ids.set("isbn13", "9783161484100");
+        ids.set("oleid", "ole-new");
+        ids.set("gbvid", "gb-1");
+        ids.set("asin", "B00TEST");
+        ids.set("volume", "3");
 
         book.apply_rs_ids(&ids);
 
@@ -212,10 +205,6 @@ mod tests {
         assert_eq!(book.openlibrary_work_id.as_deref(), Some("olw-old"));
         assert_eq!(book.google_books_volume_id.as_deref(), Some("gb-1"));
         assert_eq!(book.asin.as_deref(), Some("B00TEST"));
-        assert_eq!(
-            book.otherids,
-            Some(OtherIds(vec!["goodreads:42".to_string()]))
-        );
         assert_eq!(book.volume, Some(3.0));
         assert_eq!(book.chapter, Some(7.0));
     }

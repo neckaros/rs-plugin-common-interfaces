@@ -67,17 +67,19 @@ impl Episode {
 impl From<Episode> for RsIds {
     fn from(value: Episode) -> Self {
         let id = value.id();
-        let mut ids = RsIds {
-            trakt: value.trakt,
-            slug: value.slug,
-            tvdb: value.tvdb,
-            imdb: value.imdb,
-            tmdb: value.tmdb,
-            other_ids: value.otherids,
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        if let Some(v) = value.trakt { ids.set("trakt", v); }
+        if let Some(v) = value.slug { ids.set("slug", v); }
+        if let Some(v) = value.tvdb { ids.set("tvdb", v); }
+        if let Some(v) = value.imdb { ids.set("imdb", v); }
+        if let Some(v) = value.tmdb { ids.set("tmdb", v); }
+        if let Some(other) = value.otherids {
+            for entry in other.into_vec() {
+                let _ = ids.try_add(entry);
+            }
+        }
         if ids.try_add(id.clone()).is_err() {
-            ids.redseat = Some(id);
+            ids.set("redseat", id);
         }
         ids
     }
@@ -85,23 +87,20 @@ impl From<Episode> for RsIds {
 
 impl ApplyRsIds for Episode {
     fn apply_rs_ids(&mut self, ids: &RsIds) {
-        if let Some(trakt) = ids.trakt {
+        if let Some(trakt) = ids.trakt() {
             self.trakt = Some(trakt);
         }
-        if let Some(slug) = ids.slug.as_ref() {
-            self.slug = Some(slug.clone());
+        if let Some(slug) = ids.slug() {
+            self.slug = Some(slug.to_string());
         }
-        if let Some(tvdb) = ids.tvdb {
+        if let Some(tvdb) = ids.tvdb() {
             self.tvdb = Some(tvdb);
         }
-        if let Some(imdb) = ids.imdb.as_ref() {
-            self.imdb = Some(imdb.clone());
+        if let Some(imdb) = ids.imdb() {
+            self.imdb = Some(imdb.to_string());
         }
-        if let Some(tmdb) = ids.tmdb {
+        if let Some(tmdb) = ids.tmdb() {
             self.tmdb = Some(tmdb);
-        }
-        if let Some(other_ids) = ids.other_ids.as_ref() {
-            self.otherids = Some(other_ids.clone());
         }
     }
 }
@@ -154,14 +153,11 @@ mod tests {
             tmdb: Some(22),
             ..Default::default()
         };
-        let ids = RsIds {
-            trakt: Some(55),
-            tvdb: Some(66),
-            imdb: Some("tt0000066".to_string()),
-            slug: Some("episode-slug".to_string()),
-            other_ids: Some(OtherIds(vec!["tvmaze:ep-1".to_string()])),
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        ids.set("trakt", 55u64);
+        ids.set("tvdb", 66u64);
+        ids.set("imdb", "tt0000066");
+        ids.set("slug", "episode-slug");
 
         episode.apply_rs_ids(&ids);
 
@@ -170,9 +166,5 @@ mod tests {
         assert_eq!(episode.imdb.as_deref(), Some("tt0000066"));
         assert_eq!(episode.slug.as_deref(), Some("episode-slug"));
         assert_eq!(episode.tmdb, Some(22));
-        assert_eq!(
-            episode.otherids,
-            Some(OtherIds(vec!["tvmaze:ep-1".to_string()]))
-        );
     }
 }

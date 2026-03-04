@@ -83,16 +83,18 @@ pub struct Movie {
 
 impl From<Movie> for RsIds {
     fn from(value: Movie) -> Self {
-        let mut ids = RsIds {
-            trakt: value.trakt,
-            slug: value.slug,
-            imdb: value.imdb,
-            tmdb: value.tmdb,
-            other_ids: value.otherids,
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        if let Some(v) = value.trakt { ids.set("trakt", v); }
+        if let Some(v) = value.slug { ids.set("slug", v); }
+        if let Some(v) = value.imdb { ids.set("imdb", v); }
+        if let Some(v) = value.tmdb { ids.set("tmdb", v); }
+        if let Some(other) = value.otherids {
+            for entry in other.into_vec() {
+                let _ = ids.try_add(entry);
+            }
+        }
         if ids.try_add(value.id.clone()).is_err() {
-            ids.redseat = Some(value.id);
+            ids.set("redseat", value.id);
         }
         ids
     }
@@ -100,23 +102,20 @@ impl From<Movie> for RsIds {
 
 impl ApplyRsIds for Movie {
     fn apply_rs_ids(&mut self, ids: &RsIds) {
-        if let Some(redseat) = ids.redseat.as_ref() {
-            self.id = redseat.clone();
+        if let Some(redseat) = ids.redseat() {
+            self.id = redseat.to_string();
         }
-        if let Some(trakt) = ids.trakt {
+        if let Some(trakt) = ids.trakt() {
             self.trakt = Some(trakt);
         }
-        if let Some(slug) = ids.slug.as_ref() {
-            self.slug = Some(slug.clone());
+        if let Some(slug) = ids.slug() {
+            self.slug = Some(slug.to_string());
         }
-        if let Some(imdb) = ids.imdb.as_ref() {
-            self.imdb = Some(imdb.clone());
+        if let Some(imdb) = ids.imdb() {
+            self.imdb = Some(imdb.to_string());
         }
-        if let Some(tmdb) = ids.tmdb {
+        if let Some(tmdb) = ids.tmdb() {
             self.tmdb = Some(tmdb);
-        }
-        if let Some(other_ids) = ids.other_ids.as_ref() {
-            self.otherids = Some(other_ids.clone());
         }
     }
 }
@@ -165,14 +164,11 @@ mod tests {
             tmdb: Some(10),
             ..Default::default()
         };
-        let ids = RsIds {
-            redseat: Some("movie-new".to_string()),
-            trakt: Some(100),
-            imdb: Some("tt0000100".to_string()),
-            slug: Some("movie-slug".to_string()),
-            other_ids: Some(OtherIds(vec!["allocine:1".to_string()])),
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        ids.set("redseat", "movie-new");
+        ids.set("trakt", 100u64);
+        ids.set("imdb", "tt0000100");
+        ids.set("slug", "movie-slug");
 
         movie.apply_rs_ids(&ids);
 
@@ -181,9 +177,5 @@ mod tests {
         assert_eq!(movie.imdb.as_deref(), Some("tt0000100"));
         assert_eq!(movie.slug.as_deref(), Some("movie-slug"));
         assert_eq!(movie.tmdb, Some(10));
-        assert_eq!(
-            movie.otherids,
-            Some(OtherIds(vec!["allocine:1".to_string()]))
-        );
     }
 }

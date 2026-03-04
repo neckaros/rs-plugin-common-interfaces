@@ -41,16 +41,18 @@ pub struct Person {
 
 impl From<Person> for RsIds {
     fn from(value: Person) -> Self {
-        let mut ids = RsIds {
-            trakt: value.trakt,
-            slug: value.slug,
-            imdb: value.imdb,
-            tmdb: value.tmdb,
-            other_ids: value.otherids,
-            ..Default::default()
-        };
+        let mut ids = RsIds::default();
+        if let Some(v) = value.trakt { ids.set("trakt", v); }
+        if let Some(v) = value.slug { ids.set("slug", v); }
+        if let Some(v) = value.imdb { ids.set("imdb", v); }
+        if let Some(v) = value.tmdb { ids.set("tmdb", v); }
+        if let Some(other) = value.otherids {
+            for entry in other.into_vec() {
+                let _ = ids.try_add(entry);
+            }
+        }
         if ids.try_add(value.id.clone()).is_err() {
-            ids.redseat = Some(value.id);
+            ids.set("redseat", value.id);
         }
         ids
     }

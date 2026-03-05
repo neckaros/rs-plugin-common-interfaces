@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Serialize};
 
@@ -10,6 +11,7 @@ pub enum RsIdsError {
     InvalidId(),
     NotAMediaId(String),
     NoMediaIdRequired(Box<RsIds>),
+    InvalidBase64Ids(String),
 }
 
 // region:    --- Error Boilerplate
@@ -351,6 +353,27 @@ impl RsIds {
         OtherIds(self.as_all_ids())
     }
 
+    // -- Base64url encoding --
+
+    /// Serialize to `ids:<base64url(json)>` format for use in URL path parameters.
+    /// Encodes all IDs as a single opaque string that can be passed in place of `source:value`.
+    pub fn to_url_id(&self) -> String {
+        let json = serde_json::to_string(self).unwrap_or_default();
+        let encoded = URL_SAFE_NO_PAD.encode(json.as_bytes());
+        format!("ids:{}", encoded)
+    }
+
+    /// Decode from a base64url-encoded JSON string (without the `ids:` prefix).
+    pub fn from_base64url(encoded: &str) -> Result<Self, RsIdsError> {
+        let bytes = URL_SAFE_NO_PAD
+            .decode(encoded)
+            .map_err(|_| RsIdsError::InvalidBase64Ids(encoded.to_string()))?;
+        let json_str = std::str::from_utf8(&bytes)
+            .map_err(|_| RsIdsError::InvalidBase64Ids(encoded.to_string()))?;
+        serde_json::from_str(json_str)
+            .map_err(|_| RsIdsError::InvalidBase64Ids(encoded.to_string()))
+    }
+
     /// Return the first available TV/movie ID (imdb → trakt → tmdb → tvdb) or error.
     pub fn as_id(&self) -> Result<String, RsIdsError> {
         for key in &["imdb", "trakt", "tmdb", "tvdb"] {
@@ -511,6 +534,10 @@ impl TryFrom<OtherIds> for RsIds {
 impl TryFrom<String> for RsIds {
     type Error = RsIdsError;
     fn try_from(value: String) -> Result<Self, RsIdsError> {
+        // Base64url-encoded multi-ID format: "ids:<base64url(json)>"
+        if let Some(encoded) = value.strip_prefix("ids:") {
+            return Self::from_base64url(encoded);
+        }
         let mut ids = RsIds::default();
         ids.try_add(value)?;
         Ok(ids)
@@ -978,5 +1005,52 @@ mod tests {
         assert_eq!(loaded.get("foo"), Some("42"));
         assert_eq!(loaded.get("bar"), Some("abc"));
         Ok(())
+    }
+
+    #[test]
+    fn test_to_url_id_roundtrip() {
+        let mut ids = RsIds::default();
+        ids.set("trakt", "905982");
+        ids.set("imdb", "tt1234567");
+
+        let url_id = ids.to_url_id();
+        assert!(url_id.starts_with("ids:"));
+        assert!(RsIds::is_id(&url_id));
+
+        let decoded: RsIds = url_id.try_into().unwrap();
+        assert_eq!(decoded.trakt(), Some(905982));
+        assert_eq!(decoded.imdb(), Some("tt1234567"));
+    }
+
+    #[test]
+    fn test_from_base64url_multi() {
+        let json = r#"{"trakt":905982,"imdb":"tt1234567","tmdb":12345}"#;
+        let encoded = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(json.as_bytes());
+        let url_id = format!("ids:{}", encoded);
+
+        let ids: RsIds = url_id.try_into().unwrap();
+        assert_eq!(ids.trakt(), Some(905982));
+        assert_eq!(ids.imdb(), Some("tt1234567"));
+        assert_eq!(ids.tmdb(), Some(12345));
+    }
+
+    #[test]
+    fn test_from_base64url_invalid() {
+        let result: Result<RsIds, _> = "ids:not-valid-base64!!!".to_string().try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_is_id_base64url() {
+        let mut ids = RsIds::default();
+        ids.set("trakt", "905982");
+        let url_id = ids.to_url_id();
+        assert!(RsIds::is_id(&url_id));
+    }
+
+    #[test]
+    fn test_try_from_single_still_works() {
+        let ids: RsIds = "trakt:905982".to_string().try_into().unwrap();
+        assert_eq!(ids.trakt(), Some(905982));
     }
 }

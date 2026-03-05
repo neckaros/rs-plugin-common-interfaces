@@ -9,7 +9,8 @@ use crate::domain::person::Person;
 use crate::domain::serie::Serie;
 use crate::{CustomParamTypes, PluginCredential};
 use crate::request::RsGroupDownload;
-use crate::{domain::rs_ids::RsIds, request::RsRequest};
+use crate::domain::rs_ids::{ApplyRsIds, RsIds};
+use crate::request::RsRequest;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
@@ -150,6 +151,32 @@ pub enum RsLookupMetadataResult {
     Serie(Serie),
     #[default]
     None,
+}
+
+impl RsLookupMetadataResult {
+    /// Extract all IDs from the inner entity as an `RsIds` set.
+    pub fn extract_ids(&self) -> Option<RsIds> {
+        match self {
+            Self::Movie(m) => Some(RsIds::from(m.clone())),
+            Self::Serie(s) => Some(RsIds::from(s.clone())),
+            Self::Book(b) => Some(RsIds::from(b.clone())),
+            Self::Person(p) => Some(RsIds::from(p.clone())),
+            Self::Episode(e) => Some(RsIds::from(e.clone())),
+            Self::Media(_) | Self::None => None,
+        }
+    }
+
+    /// Apply merged IDs back onto the inner entity.
+    pub fn apply_ids(&mut self, ids: &RsIds) {
+        match self {
+            Self::Movie(m) => m.apply_rs_ids(ids),
+            Self::Serie(s) => s.apply_rs_ids(ids),
+            Self::Book(b) => b.apply_rs_ids(ids),
+            Self::Person(p) => p.apply_rs_ids(ids),
+            Self::Episode(e) => e.apply_rs_ids(ids),
+            Self::Media(_) | Self::None => {}
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]

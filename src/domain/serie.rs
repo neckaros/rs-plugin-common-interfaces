@@ -217,6 +217,12 @@ impl ApplyRsIds for Serie {
         if let Some(mal) = ids.myanimelist_manga_id() {
             self.myanimelist_manga_id = Some(mal);
         }
+        let known: &[&str] = &["redseat", "trakt", "slug", "tvdb", "imdb", "tmdb", "olwid", "anilist", "mangadex", "mal"];
+        let mut other = self.otherids.take().unwrap_or_default();
+        for (k, v) in ids.iter() {
+            if !known.contains(&k.as_str()) { other.add(k, v); }
+        }
+        if !other.as_slice().is_empty() { self.otherids = Some(other); }
     }
 }
 

@@ -102,6 +102,12 @@ impl ApplyRsIds for Episode {
         if let Some(tmdb) = ids.tmdb() {
             self.tmdb = Some(tmdb);
         }
+        let known: &[&str] = &["trakt", "slug", "tvdb", "imdb", "tmdb"];
+        let mut other = self.otherids.take().unwrap_or_default();
+        for (k, v) in ids.iter() {
+            if !known.contains(&k.as_str()) { other.add(k, v); }
+        }
+        if !other.as_slice().is_empty() { self.otherids = Some(other); }
     }
 }
 

@@ -99,6 +99,12 @@ impl ApplyRsIds for Book {
         if let Some(chapter) = ids.find_detail_f64("chapter") {
             self.chapter = Some(chapter);
         }
+        let known: &[&str] = &["redseat", "isbn13", "oleid", "olwid", "gbvid", "asin"];
+        let mut other = self.otherids.take().unwrap_or_default();
+        for (k, v) in ids.iter() {
+            if !known.contains(&k.as_str()) { other.add(k, v); }
+        }
+        if !other.as_slice().is_empty() { self.otherids = Some(other); }
     }
 }
 

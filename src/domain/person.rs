@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{domain::{other_ids::OtherIds, rs_ids::RsIds}, url::RsLink, Gender};
+use crate::{domain::{other_ids::OtherIds, rs_ids::{ApplyRsIds, RsIds}}, url::RsLink, Gender};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -37,6 +37,21 @@ pub struct Person {
     pub bio: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub otherids: Option<OtherIds>,
+}
+
+impl ApplyRsIds for Person {
+    fn apply_rs_ids(&mut self, ids: &RsIds) {
+        if let Some(trakt) = ids.trakt() { self.trakt = Some(trakt); }
+        if let Some(slug) = ids.slug() { self.slug = Some(slug.to_string()); }
+        if let Some(imdb) = ids.imdb() { self.imdb = Some(imdb.to_string()); }
+        if let Some(tmdb) = ids.tmdb() { self.tmdb = Some(tmdb); }
+        let known: &[&str] = &["redseat", "trakt", "slug", "imdb", "tmdb"];
+        let mut other = self.otherids.take().unwrap_or_default();
+        for (k, v) in ids.iter() {
+            if !known.contains(&k.as_str()) { other.add(k, v); }
+        }
+        if !other.as_slice().is_empty() { self.otherids = Some(other); }
+    }
 }
 
 impl From<Person> for RsIds {

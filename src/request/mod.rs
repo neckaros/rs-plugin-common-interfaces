@@ -318,6 +318,31 @@ impl RsRequest {
             }
         }
     }
+
+    /// When a file has been selected from the `files` list via `selected_file`,
+    /// copy the selected file's properties (mime, size, filename, season, episode, etc.)
+    /// to the top-level request fields so downstream code uses the correct values.
+    pub fn apply_selected_file_info(&mut self) {
+        if let (Some(selected), Some(files)) = (&self.selected_file, &self.files) {
+            if let Some(file) = files.iter().find(|f| f.name == *selected) {
+                if file.mime.is_some() {
+                    self.mime = file.mime.clone();
+                }
+                if file.size > 0 {
+                    self.size = Some(file.size);
+                }
+                if self.filename.is_none() {
+                    self.filename = Some(file.name.clone());
+                }
+                if self.season.is_none() {
+                    self.season = file.season;
+                }
+                if self.episode.is_none() {
+                    self.episode = file.episode;
+                }
+            }
+        }
+    }
 }
 
 #[derive(

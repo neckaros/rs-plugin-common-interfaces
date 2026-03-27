@@ -76,6 +76,8 @@ pub struct RsLookupEpisode {
 #[serde(rename_all = "camelCase")]
 pub struct RsLookupBook {
     pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub author: Option<String>,
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

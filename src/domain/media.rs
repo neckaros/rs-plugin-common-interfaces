@@ -529,6 +529,7 @@ impl From<RsRequest> for MediaForUpdate {
 
         MediaForUpdate {
             name: value.filename_or_extract_from_url(),
+            mimetype: value.mime,
             description: value.description,
             ignore_origin_duplicate: value.ignore_origin_duplicate,
             size: value.size,

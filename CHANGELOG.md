@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.36.0] - 2026-04-29
+
+- Documented `RsVideoCapabilities.maxConcurrentJobs` host-side concurrency semantics.
+- `null`/missing uses the host default, `0` means unlimited, and positive values are strict per-plugin limits.
+
 ## [0.22.0] - 2026-02-13
 
 - Extended `RsIds` with optional books/manga fields:

@@ -453,3 +453,19 @@ pub enum RsVideoTranscodeCancelResponse {
     Cancelled,
     Error,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn video_capabilities_serializes_max_concurrent_jobs() {
+        let caps = RsVideoCapabilities {
+            max_concurrent_jobs: Some(0),
+            ..Default::default()
+        };
+
+        let json = serde_json::to_string(&caps).unwrap();
+        assert!(json.contains("\"maxConcurrentJobs\":0"));
+    }
+}

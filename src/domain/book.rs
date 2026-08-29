@@ -49,6 +49,10 @@ pub struct Book {
     pub modified: u64,
     #[serde(default)]
     pub added: u64,
+    /// Request-user-specific read timestamp hydrated from global history.
+    /// This is response data and is intentionally absent from `BookForUpdate`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub watched: Option<i64>,
 }
 
 impl From<Book> for RsIds {
@@ -213,5 +217,25 @@ mod tests {
         assert_eq!(book.asin.as_deref(), Some("B00TEST"));
         assert_eq!(book.volume, Some(3.0));
         assert_eq!(book.chapter, Some(7.0));
+    }
+
+    #[test]
+    fn book_watched_is_optional_response_data() {
+        let read = Book {
+            id: "book-1".to_string(),
+            name: "Book 1".to_string(),
+            watched: Some(1_725_000_000_123),
+            ..Default::default()
+        };
+        let read_value = serde_json::to_value(&read).unwrap();
+        assert_eq!(read_value.get("watched"), Some(&json!(1_725_000_000_123_i64)));
+
+        let unread = Book {
+            id: "book-2".to_string(),
+            name: "Book 2".to_string(),
+            ..Default::default()
+        };
+        let unread_value = serde_json::to_value(&unread).unwrap();
+        assert!(unread_value.get("watched").is_none());
     }
 }

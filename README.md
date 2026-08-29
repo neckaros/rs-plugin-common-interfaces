@@ -29,3 +29,16 @@ Get download request:
 
 Cancel job:
 `convert_cancel(jobId: RsVideoTranscodeJobPluginAction)` => `RsVideoTranscodeCancelResponse`
+
+## Publishing
+
+Merging a change into `main` runs `.github/workflows/publish.yml`. The workflow tests and packages the crate, checks whether the version in `Cargo.toml` already exists on crates.io, and publishes only a new version.
+
+Publishing uses crates.io trusted publishing with a short-lived GitHub OIDC token. Configure the crate once in its crates.io Trusted Publishers settings with:
+
+- GitHub owner: `neckaros`
+- Repository: `rs-plugin-common-interfaces`
+- Workflow: `publish.yml`
+- Environment: leave empty
+
+The crate must already have an initial manually published version before trusted publishing can be configured. No `CARGO_REGISTRY_TOKEN` GitHub secret is required.

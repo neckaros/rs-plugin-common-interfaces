@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.38.0]
+
+- Replace `Person.kind: Option<String>` with `Option<PersonType>` (Rust API breaking change).
+- Add canonical person types and a lossless custom string fallback; JSON `type` and SQLite values remain strings.
+- Plugins are responsible for mapping provider labels to canonical types.
+
 ## [0.36.0] - 2026-04-29
 
 - Documented `RsVideoCapabilities.maxConcurrentJobs` host-side concurrency semantics.

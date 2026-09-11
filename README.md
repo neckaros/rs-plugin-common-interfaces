@@ -42,3 +42,29 @@ Publishing uses crates.io trusted publishing with a short-lived GitHub OIDC toke
 - Environment: leave empty
 
 The crate must already have an initial manually published version before trusted publishing can be configured. No `CARGO_REGISTRY_TOKEN` GitHub secret is required.
+
+
+## Person types (0.38.0)
+
+`domain::person::PersonType` replaces the Rust `String` in `Person.kind`.
+Canonical variants are `Actor`, `Director`, `Writer`, `Producer`, `Creator`,
+`Author`, `Family`, `Friends`, and `Singer`. `Custom(String)` supports any other
+value. The type is also readable/writable as SQLite TEXT with the `rusqlite` feature.
+
+The JSON field stays a plain string, for example `{"type":"Actor"}` or
+`{"type":"custom name"}` inside a person object. Missing types remain omitted,
+and `null` remains accepted. Existing string payloads continue to deserialize.
+
+Plugins must map their provider's labels to the appropriate enum variants:
+TMDB `Acting` should become `PersonType::Actor`, `Directing` should become
+`PersonType::Director`, and book authors should use `PersonType::Author`.
+There is no shared alias normalization: `Acting`, `acteur`, and `actor` remain
+custom strings unless the plugin maps them. Custom values preserve case and
+whitespace. A custom string equal to a canonical spelling decodes as that
+canonical variant because their wire representations are identical.
+
+For Rust callers, replace `kind: Some("Actor".to_string())` with
+`kind: Some(PersonType::Actor)`. Use `PersonType::Custom(value)` for a custom
+label, or `PersonType::from(value)` to recognize canonical spellings and retain
+anything else. This is a Rust API breaking change, hence the 0.38.0 version bump;
+it does not require changing existing JSON or database string formats.

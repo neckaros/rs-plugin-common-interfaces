@@ -289,3 +289,38 @@ mod person_type_tests {
         }
     }
 }
+
+/// A person viewed in the context of a book, movie, or show relationship.
+#[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PersonWithRoles {
+    #[serde(flatten)]
+    pub person: Person,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub roles: Option<Vec<PersonType>>,
+}
+
+#[cfg(test)]
+mod credit_tests {
+    use super::*;
+    use crate::domain::Relations;
+
+    #[test]
+    fn relationship_roles_preserve_strings_and_legacy_payloads() {
+        let legacy = serde_json::json!({"peopleDetails": [Person { id: "tmdb:1".into(), name: "Person".into(), ..Default::default() }]});
+        let relations: Relations = serde_json::from_value(legacy).unwrap();
+        assert!(relations.people_roles.is_none());
+        let credit = PersonWithRoles {
+            person: Person { id: "local".into(), name: "Person".into(), kind: Some(PersonType::Actor), ..Default::default() },
+            roles: Some(vec![PersonType::Director, PersonType::Custom("custom name".into())]),
+        };
+        let wire = serde_json::to_value(&credit).unwrap();
+        assert_eq!(wire["type"], "Actor");
+        assert_eq!(wire["roles"], serde_json::json!(["Director", "custom name"]));
+        assert_eq!(serde_json::from_value::<PersonWithRoles>(wire).unwrap(), credit);
+        let relations = Relations { people_roles: Some(std::collections::HashMap::from([
+            ("tmdb:1".into(), vec![PersonType::Actor, PersonType::Director])
+        ])), ..Default::default() };
+        assert_eq!(serde_json::to_value(relations).unwrap()["peopleRoles"]["tmdb:1"], serde_json::json!(["Actor","Director"]));
+    }
+}

@@ -81,3 +81,7 @@ an explicit empty list clears known roles. Custom strings remain unchanged.
 
 `PersonWithRoles` flattens a `Person` plus optional `roles` for relationship
 responses. Legacy consumers can still read the existing person fields.
+
+`Relations.peopleCharacters` similarly maps credit IDs to character-name lists.
+`PersonWithRoles.characters` returns these optional contextual names. Missing
+entries preserve known names; empty arrays explicitly clear them.

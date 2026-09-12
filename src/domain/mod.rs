@@ -49,6 +49,9 @@ pub struct Relations {
     /// Omission means unknown; an explicit empty list means no roles.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub people_roles: Option<std::collections::HashMap<String, Vec<person::PersonType>>>,
+    /// Character names keyed by the corresponding credit person ID.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people_characters: Option<std::collections::HashMap<String, Vec<String>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags_details: Option<Vec<Tag>>,
 

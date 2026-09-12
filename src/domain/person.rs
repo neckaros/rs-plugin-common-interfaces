@@ -298,6 +298,8 @@ pub struct PersonWithRoles {
     pub person: Person,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub roles: Option<Vec<PersonType>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub characters: Option<Vec<String>>,
 }
 
 #[cfg(test)]
@@ -313,9 +315,11 @@ mod credit_tests {
         let credit = PersonWithRoles {
             person: Person { id: "local".into(), name: "Person".into(), kind: Some(PersonType::Actor), ..Default::default() },
             roles: Some(vec![PersonType::Director, PersonType::Custom("custom name".into())]),
+            characters: Some(vec!["Character A".into(), "Character B".into()]),
         };
         let wire = serde_json::to_value(&credit).unwrap();
         assert_eq!(wire["type"], "Actor");
+        assert_eq!(wire["characters"], serde_json::json!(["Character A", "Character B"]));
         assert_eq!(wire["roles"], serde_json::json!(["Director", "custom name"]));
         assert_eq!(serde_json::from_value::<PersonWithRoles>(wire).unwrap(), credit);
         let relations = Relations { people_roles: Some(std::collections::HashMap::from([

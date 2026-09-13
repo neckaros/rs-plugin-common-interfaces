@@ -76,7 +76,7 @@ array of `PersonWithRoles` objects. Each object flattens the person profile and
 its optional relationship fields:
 
 ```json
-{"peopleDetails":[{"id":"tmdb:287","name":"Brad Pitt","modified":0,"added":0,"generated":true,"roles":["Actor"],"characters":["Tyler Durden"],"rank":1}]}
+{"peopleDetails":[{"id":"tmdb:287","name":"Brad Pitt","modified":0,"added":0,"posterv":0,"generated":true,"roles":["Actor"],"characters":["Tyler Durden"],"rank":1}]}
 ```
 
 `roles`, `characters`, and `rank` belong to the title/person relationship.

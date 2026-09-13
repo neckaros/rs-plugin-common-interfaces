@@ -48,7 +48,7 @@ The crate must already have an initial manually published version before trusted
 
 `domain::person::PersonType` replaces the Rust `String` in `Person.kind`.
 Canonical variants are `Actor`, `Director`, `Writer`, `Producer`, `Creator`,
-`Author`, `Family`, `Friends`, and `Singer`. `Custom(String)` supports any other
+`Author`, `Family`, `Friends`, `Singer`, and `Character`. `Custom(String)` supports any other
 value. The type is also readable/writable as SQLite TEXT with the `rusqlite` feature.
 
 The JSON field stays a plain string, for example `{"type":"Actor"}` or
@@ -90,3 +90,13 @@ producers and consumers together. Rust producers can convert a plain `Person`
 with `.into()` or construct `PersonWithRoles` with its contextual fields.
 `people` remains available for generic ID references used in media relationships;
 title credit snapshots use only `peopleDetails`.
+
+### Fictional characters (0.40.1)
+
+Use `PersonType::Character` for fictional characters, including anime and manga
+characters. It serializes as `"Character"` in the person `type` field. Character
+names played by an actor still belong in the credit `characters` field.
+
+Existing compiled plugins do not need updating: older interfaces preserve this
+string as `Custom("Character")`. Rust consumers rebuilding against 0.40.1 may
+need to add an arm if they exhaustively match `PersonType`.

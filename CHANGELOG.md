@@ -2,9 +2,8 @@
 
 ## [0.40.0]
 
-- Use `Vec<PersonWithRoles>` for `Relations.peopleDetails`, carrying optional `roles`, `characters`, and integer `rank` on each plugin credit. Rust producers can convert existing `Person` values with `.into()`.
-- Keep legacy JSON person entries compatible and provide `people_credits()` to read older map-based credits with inline-field precedence.
-- Add optional `PersonWithRoles.rank` and compact title snapshot `peopleRanks`; lower ranks come first, zero is valid, and absent fields stay omitted.
+- Represent plugin credits and title snapshots as `Relations.peopleDetails: Vec<PersonWithRoles>`, with optional inline `roles`, `characters`, integer `rank`, and stored relationship confidence (`conf`). Lower ranks come first; zero is valid.
+- Remove `peopleRoles`, `peopleCharacters`, and `peopleRanks` maps and their compatibility helper. Credit producers and consumers must adopt the new format together.
 
 ## [0.38.0]
 

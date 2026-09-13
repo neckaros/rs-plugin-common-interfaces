@@ -303,6 +303,9 @@ pub struct PersonWithRoles {
     /// Per-title credit rank, independent of person popularity. Lower comes first.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rank: Option<u32>,
+    /// Optional confidence of the title/person relationship.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conf: Option<u16>,
 }
 
 impl From<Person> for PersonWithRoles {
@@ -317,88 +320,51 @@ mod credit_tests {
     use crate::domain::Relations;
 
     #[test]
-    fn inline_plugin_credits_round_trip_without_parallel_maps() {
+    fn credit_objects_round_trip_with_optional_context() {
         let credit = PersonWithRoles {
             person: Person { id: "tmdb:1".into(), name: "Actor".into(), ..Default::default() },
-            roles: Some(vec![PersonType::Actor]),
+            roles: Some(vec![PersonType::Actor, PersonType::Custom("Guest".into())]),
             characters: Some(vec!["Character".into()]),
             rank: Some(0),
+            conf: Some(80),
         };
-        let relations = Relations { people_details: Some(vec![credit.clone()]), ..Default::default() };
+        let relations = Relations { people_details: Some(vec![credit]), ..Default::default() };
         let wire = serde_json::to_value(&relations).unwrap();
-        assert_eq!(wire["peopleDetails"][0]["id"], "tmdb:1");
-        assert_eq!(wire["peopleDetails"][0]["rank"], 0);
-        assert!(wire.get("peopleRanks").is_none());
-        assert!(wire.get("peopleRoles").is_none());
-        assert!(wire.get("peopleCharacters").is_none());
-        assert_eq!(serde_json::from_value::<Relations>(wire).unwrap().people_credits(), vec![credit]);
+        assert_eq!(wire.as_object().unwrap().len(), 1);
+        let person = &wire["peopleDetails"][0];
+        assert_eq!(person["id"], "tmdb:1");
+        assert_eq!(person["rank"], 0);
+        assert_eq!(person["conf"], 80);
+        assert_eq!(person["roles"], serde_json::json!(["Actor", "Guest"]));
+        assert_eq!(person["characters"], serde_json::json!(["Character"]));
+        assert_eq!(serde_json::from_value::<Relations>(wire).unwrap(), relations);
     }
 
     #[test]
-    fn legacy_plugin_maps_fill_only_missing_inline_fields() {
-        let person = Person { id: "tmdb:1".into(), name: "Actor".into(), ..Default::default() };
-        let wire = serde_json::json!({
-            "peopleDetails": [person],
-            "peopleRoles": {"tmdb:1": ["Actor"]},
-            "peopleCharacters": {"tmdb:1": ["Legacy character"], "map-only": ["Another character"]},
-            "peopleRanks": {"tmdb:1": 3},
-            "people": [{"id": "tmdb:1"}, {"id": "local"}]
-        });
-        let mut relations: Relations = serde_json::from_value(wire).unwrap();
-        let credits = relations.people_credits();
-        assert_eq!(credits.len(), 3);
-        assert_eq!(credits[0].roles, Some(vec![PersonType::Actor]));
-        assert_eq!(credits[0].characters, Some(vec!["Legacy character".into()]));
-        assert_eq!(credits[0].rank, Some(3));
-        assert_eq!(credits[1].person.id, "local");
-        assert_eq!(credits[2].person.id, "map-only");
-        assert_eq!(credits[2].characters, Some(vec!["Another character".into()]));
-        let credit = &mut relations.people_details.as_mut().unwrap()[0];
-        credit.roles = Some(vec![]);
-        credit.characters = Some(vec![]);
-        credit.rank = Some(0);
-        let credits = relations.people_credits();
-        assert_eq!(credits[0].roles, Some(vec![]));
-        assert_eq!(credits[0].characters, Some(vec![]));
-        assert_eq!(credits[0].rank, Some(0));
-    }
-
-    #[test]
-    fn optional_credit_ranks_round_trip_and_accept_legacy_payloads() {
-        let legacy = serde_json::to_value(Person { id: "person".into(), name: "Actor".into(), ..Default::default() }).unwrap();
-        let credit: PersonWithRoles = serde_json::from_value(legacy).unwrap();
-        assert_eq!(credit.rank, None);
-        assert!(serde_json::to_value(credit).unwrap().get("rank").is_none());
-        let legacy: Relations = serde_json::from_value(serde_json::json!({})).unwrap();
-        assert!(legacy.people_ranks.is_none());
-        assert!(serde_json::to_value(legacy).unwrap().get("peopleRanks").is_none());
-        let wire = serde_json::json!({"peopleRanks": {"tmdb:1": 0, "tmdb:2": 4294967295u32}});
-        let relations: Relations = serde_json::from_value(wire.clone()).unwrap();
-        assert_eq!(serde_json::to_value(relations).unwrap(), wire);
-        for invalid in [serde_json::json!(-1), serde_json::json!(1.5), serde_json::json!(4294967296u64)] {
-            assert!(serde_json::from_value::<Relations>(serde_json::json!({"peopleRanks": {"id": invalid}})).is_err());
+    fn credit_context_is_optional_and_preserves_explicit_empty_lists() {
+        let credit = PersonWithRoles::from(Person { id: "person".into(), ..Default::default() });
+        let mut wire = serde_json::to_value(&credit).unwrap();
+        for field in ["roles", "characters", "rank", "conf"] {
+            assert!(wire.get(field).is_none());
         }
+        assert_eq!(serde_json::from_value::<PersonWithRoles>(wire.clone()).unwrap(), credit);
+        wire["roles"] = serde_json::json!([]);
+        wire["characters"] = serde_json::json!([]);
+        let restored: PersonWithRoles = serde_json::from_value(wire).unwrap();
+        assert_eq!(restored.roles, Some(vec![]));
+        assert_eq!(restored.characters, Some(vec![]));
     }
 
     #[test]
-    fn relationship_roles_preserve_strings_and_legacy_payloads() {
-        let legacy = serde_json::json!({"peopleDetails": [Person { id: "tmdb:1".into(), name: "Person".into(), ..Default::default() }]});
-        let relations: Relations = serde_json::from_value(legacy).unwrap();
-        assert!(relations.people_roles.is_none());
-        let credit = PersonWithRoles {
-            person: Person { id: "local".into(), name: "Person".into(), kind: Some(PersonType::Actor), ..Default::default() },
-            roles: Some(vec![PersonType::Director, PersonType::Custom("custom name".into())]),
-            characters: Some(vec!["Character A".into(), "Character B".into()]),
-            rank: Some(0),
-        };
-        let wire = serde_json::to_value(&credit).unwrap();
-        assert_eq!(wire["type"], "Actor");
-        assert_eq!(wire["characters"], serde_json::json!(["Character A", "Character B"]));
-        assert_eq!(wire["roles"], serde_json::json!(["Director", "custom name"]));
-        assert_eq!(serde_json::from_value::<PersonWithRoles>(wire).unwrap(), credit);
-        let relations = Relations { people_roles: Some(std::collections::HashMap::from([
-            ("tmdb:1".into(), vec![PersonType::Actor, PersonType::Director])
-        ])), ..Default::default() };
-        assert_eq!(serde_json::to_value(relations).unwrap()["peopleRoles"]["tmdb:1"], serde_json::json!(["Actor","Director"]));
+    fn credit_rank_accepts_unsigned_integers_only() {
+        let mut wire = serde_json::to_value(PersonWithRoles::default()).unwrap();
+        for rank in [0, u32::MAX] {
+            wire["rank"] = serde_json::json!(rank);
+            assert_eq!(serde_json::from_value::<PersonWithRoles>(wire.clone()).unwrap().rank, Some(rank));
+        }
+        for invalid in [serde_json::json!(-1), serde_json::json!(1.5), serde_json::json!(4294967296u64)] {
+            wire["rank"] = invalid;
+            assert!(serde_json::from_value::<PersonWithRoles>(wire.clone()).is_err());
+        }
     }
 }

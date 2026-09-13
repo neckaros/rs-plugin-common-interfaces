@@ -24,6 +24,8 @@ pub enum PersonType {
     Family,
     Friends,
     Singer,
+    /// A fictional character, including anime and manga characters.
+    Character,
     Custom(String),
 }
 
@@ -39,6 +41,7 @@ impl PersonType {
             Self::Family => "Family",
             Self::Friends => "Friends",
             Self::Singer => "Singer",
+            Self::Character => "Character",
             Self::Custom(value) => value,
         }
     }
@@ -56,6 +59,7 @@ impl From<String> for PersonType {
             "Family" => Self::Family,
             "Friends" => Self::Friends,
             "Singer" => Self::Singer,
+            "Character" => Self::Character,
             _ => Self::Custom(value),
         }
     }
@@ -211,6 +215,7 @@ mod person_type_tests {
             (PersonType::Family, "Family"),
             (PersonType::Friends, "Friends"),
             (PersonType::Singer, "Singer"),
+            (PersonType::Character, "Character"),
         ];
         for (kind, wire) in cases {
             let person = Person {
@@ -274,7 +279,11 @@ mod person_type_tests {
     fn sqlite_types_remain_plain_text() {
         let conn = rusqlite::Connection::open_in_memory().unwrap();
         conn.execute("CREATE TABLE people (type TEXT)", []).unwrap();
-        for kind in [PersonType::Actor, PersonType::Custom("custom name".into())] {
+        for kind in [
+            PersonType::Actor,
+            PersonType::Character,
+            PersonType::Custom("custom name".into()),
+        ] {
             conn.execute("INSERT INTO people (type) VALUES (?)", [&kind])
                 .unwrap();
             let (text, restored): (String, PersonType) = conn

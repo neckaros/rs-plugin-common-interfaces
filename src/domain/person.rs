@@ -305,10 +305,61 @@ pub struct PersonWithRoles {
     pub rank: Option<u32>,
 }
 
+impl From<Person> for PersonWithRoles {
+    fn from(person: Person) -> Self {
+        Self { person, ..Default::default() }
+    }
+}
+
 #[cfg(test)]
 mod credit_tests {
     use super::*;
     use crate::domain::Relations;
+
+    #[test]
+    fn inline_plugin_credits_round_trip_without_parallel_maps() {
+        let credit = PersonWithRoles {
+            person: Person { id: "tmdb:1".into(), name: "Actor".into(), ..Default::default() },
+            roles: Some(vec![PersonType::Actor]),
+            characters: Some(vec!["Character".into()]),
+            rank: Some(0),
+        };
+        let relations = Relations { people_details: Some(vec![credit.clone()]), ..Default::default() };
+        let wire = serde_json::to_value(&relations).unwrap();
+        assert_eq!(wire["peopleDetails"][0]["id"], "tmdb:1");
+        assert_eq!(wire["peopleDetails"][0]["rank"], 0);
+        assert!(wire.get("peopleRanks").is_none());
+        assert!(wire.get("peopleRoles").is_none());
+        assert!(wire.get("peopleCharacters").is_none());
+        assert_eq!(serde_json::from_value::<Relations>(wire).unwrap().people_credits(), vec![credit]);
+    }
+
+    #[test]
+    fn legacy_plugin_maps_fill_only_missing_inline_fields() {
+        let person = Person { id: "tmdb:1".into(), name: "Actor".into(), ..Default::default() };
+        let wire = serde_json::json!({
+            "peopleDetails": [person],
+            "peopleRoles": {"tmdb:1": ["Actor"]},
+            "peopleCharacters": {"tmdb:1": ["Legacy character"]},
+            "peopleRanks": {"tmdb:1": 3},
+            "people": [{"id": "tmdb:1"}, {"id": "local"}]
+        });
+        let mut relations: Relations = serde_json::from_value(wire).unwrap();
+        let credits = relations.people_credits();
+        assert_eq!(credits.len(), 2);
+        assert_eq!(credits[0].roles, Some(vec![PersonType::Actor]));
+        assert_eq!(credits[0].characters, Some(vec!["Legacy character".into()]));
+        assert_eq!(credits[0].rank, Some(3));
+        assert_eq!(credits[1].person.id, "local");
+        let credit = &mut relations.people_details.as_mut().unwrap()[0];
+        credit.roles = Some(vec![]);
+        credit.characters = Some(vec![]);
+        credit.rank = Some(0);
+        let credits = relations.people_credits();
+        assert_eq!(credits[0].roles, Some(vec![]));
+        assert_eq!(credits[0].characters, Some(vec![]));
+        assert_eq!(credits[0].rank, Some(0));
+    }
 
     #[test]
     fn optional_credit_ranks_round_trip_and_accept_legacy_payloads() {

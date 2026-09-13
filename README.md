@@ -69,28 +69,24 @@ label, or `PersonType::from(value)` to recognize canonical spellings and retain
 anything else. This is a Rust API breaking change, hence the 0.38.0 version bump;
 it does not require changing existing JSON or database string formats.
 
-### Credit roles
+### Plugin credits
 
-`Relations.peopleRoles` optionally maps each `peopleDetails[].id` (or raw
-`people[].id`) to a list of `PersonType` values. These are roles in the
-specific book/movie/show, separate from the person's general `type`.
-Example: `"peopleRoles": {"tmdb:1": ["Actor", "Director"]}`.
-Plugins must combine multiple credits for a selected person without duplicating
-the person. Missing entries mean unknown and should preserve stored roles;
-an explicit empty list clears known roles. Custom strings remain unchanged.
+`Relations.peopleDetails` is an optional array of `PersonWithRoles` objects. Each
+object flattens the person profile and its optional relationship fields:
 
-`PersonWithRoles` flattens a `Person` plus optional `roles` for relationship
-responses. Legacy consumers can still read the existing person fields.
+```json
+{"peopleDetails":[{"id":"tmdb:287","name":"Brad Pitt","modified":0,"added":0,"generated":true,"roles":["Actor"],"characters":["Tyler Durden"],"rank":1}]}
+```
 
-`Relations.peopleCharacters` similarly maps credit IDs to character-name lists.
-`PersonWithRoles.characters` returns these optional contextual names. Missing
-entries preserve known names; empty arrays explicitly clear them.
+`roles`, `characters`, and `rank` describe this title/person relationship, not the
+person's global profile. Lower ranks come first; zero is valid. Unknown values
+are omitted. Missing fields preserve saved values; empty role/name arrays clear
+them. Old person-only array entries still deserialize with absent credit fields.
+Rust producers can convert a `Person` with `.into()` for an unadorned credit.
 
-### Credit ordering
-
-`Relations.peopleRanks` optionally maps person reference IDs to unsigned 32-bit
-credit ranks, for example `{"tmdb:1": 0, "tmdb:2": 1}`. Lower ranks come first;
-zero is valid. A rank belongs to one title/person relationship, not the person's
-profile or popularity. Providers should omit unknown ranks rather than inventing
-scores. `PersonWithRoles.rank` exposes the same optional value in credit responses.
-Both fields are omitted when absent and accept legacy payloads without ranks.
+`people_credits()` reads this array and fills missing fields from legacy
+`peopleRoles`/`peopleCharacters`/`peopleRanks` maps. Inline values take precedence,
+including explicit empty arrays and rank zero. Local `people` references are
+included once when they have no detail object. New plugins should emit only the
+inline array. Separate maps remain supported for compact title snapshots and
+older plugins; they are not required when adding fields to plugin credit objects.

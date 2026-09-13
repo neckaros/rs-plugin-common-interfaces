@@ -89,10 +89,14 @@ impl Relations {
     /// Local references without profiles are included for existing-book imports.
     pub fn people_credits(&self) -> Vec<person::PersonWithRoles> {
         let mut credits = self.people_details.clone().unwrap_or_default();
-        for reference in self.people.iter().flatten() {
-            if !credits.iter().any(|credit| credit.person.id == reference.id) {
+        let references = self.people.iter().flatten().map(|reference| &reference.id)
+            .chain(self.people_roles.iter().flat_map(|map| map.keys()))
+            .chain(self.people_characters.iter().flat_map(|map| map.keys()))
+            .chain(self.people_ranks.iter().flat_map(|map| map.keys()));
+        for id in references {
+            if !credits.iter().any(|credit| &credit.person.id == id) {
                 credits.push(Person {
-                    id: reference.id.clone(),
+                    id: id.clone(),
                     ..Default::default()
                 }.into());
             }

@@ -340,17 +340,19 @@ mod credit_tests {
         let wire = serde_json::json!({
             "peopleDetails": [person],
             "peopleRoles": {"tmdb:1": ["Actor"]},
-            "peopleCharacters": {"tmdb:1": ["Legacy character"]},
+            "peopleCharacters": {"tmdb:1": ["Legacy character"], "map-only": ["Another character"]},
             "peopleRanks": {"tmdb:1": 3},
             "people": [{"id": "tmdb:1"}, {"id": "local"}]
         });
         let mut relations: Relations = serde_json::from_value(wire).unwrap();
         let credits = relations.people_credits();
-        assert_eq!(credits.len(), 2);
+        assert_eq!(credits.len(), 3);
         assert_eq!(credits[0].roles, Some(vec![PersonType::Actor]));
         assert_eq!(credits[0].characters, Some(vec!["Legacy character".into()]));
         assert_eq!(credits[0].rank, Some(3));
         assert_eq!(credits[1].person.id, "local");
+        assert_eq!(credits[2].person.id, "map-only");
+        assert_eq!(credits[2].characters, Some(vec!["Another character".into()]));
         let credit = &mut relations.people_details.as_mut().unwrap()[0];
         credit.roles = Some(vec![]);
         credit.characters = Some(vec![]);

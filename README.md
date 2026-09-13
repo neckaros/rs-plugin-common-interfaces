@@ -69,19 +69,24 @@ label, or `PersonType::from(value)` to recognize canonical spellings and retain
 anything else. This is a Rust API breaking change, hence the 0.38.0 version bump;
 it does not require changing existing JSON or database string formats.
 
-### Credit roles
+### Credits
 
-`Relations.peopleRoles` optionally maps each `peopleDetails[].id` (or raw
-`people[].id`) to a list of `PersonType` values. These are roles in the
-specific book/movie/show, separate from the person's general `type`.
-Example: `"peopleRoles": {"tmdb:1": ["Actor", "Director"]}`.
-Plugins must combine multiple credits for a selected person without duplicating
-the person. Missing entries mean unknown and should preserve stored roles;
-an explicit empty list clears known roles. Custom strings remain unchanged.
+Plugin results and title snapshots use `Relations.peopleDetails`, an optional
+array of `PersonWithRoles` objects. Each object flattens the person profile and
+its optional relationship fields:
 
-`PersonWithRoles` flattens a `Person` plus optional `roles` for relationship
-responses. Legacy consumers can still read the existing person fields.
+```json
+{"peopleDetails":[{"id":"tmdb:287","name":"Brad Pitt","modified":0,"added":0,"posterv":0,"generated":true,"roles":["Actor"],"characters":["Tyler Durden"],"rank":1}]}
+```
 
-`Relations.peopleCharacters` similarly maps credit IDs to character-name lists.
-`PersonWithRoles.characters` returns these optional contextual names. Missing
-entries preserve known names; empty arrays explicitly clear them.
+`roles`, `characters`, and `rank` belong to the title/person relationship.
+Lower ranks come first; zero is valid. Unknown values are omitted. Missing fields
+preserve saved values; empty role/name arrays clear them. `conf` optionally
+reports the stored relationship confidence, such as a book-author match.
+
+This is a breaking credit-format change: `peopleRoles`, `peopleCharacters`, and
+`peopleRanks` are removed. There is no map conversion or fallback. Update credit
+producers and consumers together. Rust producers can convert a plain `Person`
+with `.into()` or construct `PersonWithRoles` with its contextual fields.
+`people` remains available for generic ID references used in media relationships;
+title credit snapshots use only `peopleDetails`.

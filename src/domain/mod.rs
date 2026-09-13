@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{media::{FileEpisode, MediaItemReference}, movie::Movie, person::Person, serie::Serie, tag::Tag};
+use crate::domain::{media::{FileEpisode, MediaItemReference}, movie::Movie, serie::Serie, tag::Tag};
 
 pub mod backup;
 pub mod book;
@@ -44,14 +44,7 @@ pub struct ItemWithRelations<T> {
 #[serde(rename_all = "camelCase")]
 pub struct Relations {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub people_details: Option<Vec<Person>>,
-    /// Credit roles keyed by the corresponding people_details/person reference ID.
-    /// Omission means unknown; an explicit empty list means no roles.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub people_roles: Option<std::collections::HashMap<String, Vec<person::PersonType>>>,
-    /// Character names keyed by the corresponding credit person ID.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub people_characters: Option<std::collections::HashMap<String, Vec<String>>>,
+    pub people_details: Option<Vec<person::PersonWithRoles>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags_details: Option<Vec<Tag>>,
 

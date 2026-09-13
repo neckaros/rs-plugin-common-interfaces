@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.40.0]
+
+- Represent plugin credits and title snapshots as `Relations.peopleDetails: Vec<PersonWithRoles>`, with optional inline `roles`, `characters`, integer `rank`, and stored relationship confidence (`conf`). Lower ranks come first; zero is valid.
+- Remove `peopleRoles`, `peopleCharacters`, and `peopleRanks` maps and their compatibility helper. Credit producers and consumers must adopt the new format together.
+
 ## [0.38.0]
 
 - Replace `Person.kind: Option<String>` with `Option<PersonType>` (Rust API breaking change).

@@ -52,6 +52,10 @@ pub struct Relations {
     /// Character names keyed by the corresponding credit person ID.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub people_characters: Option<std::collections::HashMap<String, Vec<String>>>,
+    /// Optional per-title credit ranks keyed by the corresponding person reference ID.
+    /// Lower values come first (zero is first); absent entries mean unknown.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub people_ranks: Option<std::collections::HashMap<String, u32>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags_details: Option<Vec<Tag>>,
 

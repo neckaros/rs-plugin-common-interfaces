@@ -300,12 +300,32 @@ pub struct PersonWithRoles {
     pub roles: Option<Vec<PersonType>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub characters: Option<Vec<String>>,
+    /// Per-title credit rank, independent of person popularity. Lower comes first.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rank: Option<u32>,
 }
 
 #[cfg(test)]
 mod credit_tests {
     use super::*;
     use crate::domain::Relations;
+
+    #[test]
+    fn optional_credit_ranks_round_trip_and_accept_legacy_payloads() {
+        let legacy = serde_json::to_value(Person { id: "person".into(), name: "Actor".into(), ..Default::default() }).unwrap();
+        let credit: PersonWithRoles = serde_json::from_value(legacy).unwrap();
+        assert_eq!(credit.rank, None);
+        assert!(serde_json::to_value(credit).unwrap().get("rank").is_none());
+        let legacy: Relations = serde_json::from_value(serde_json::json!({})).unwrap();
+        assert!(legacy.people_ranks.is_none());
+        assert!(serde_json::to_value(legacy).unwrap().get("peopleRanks").is_none());
+        let wire = serde_json::json!({"peopleRanks": {"tmdb:1": 0, "tmdb:2": 4294967295u32}});
+        let relations: Relations = serde_json::from_value(wire.clone()).unwrap();
+        assert_eq!(serde_json::to_value(relations).unwrap(), wire);
+        for invalid in [serde_json::json!(-1), serde_json::json!(1.5), serde_json::json!(4294967296u64)] {
+            assert!(serde_json::from_value::<Relations>(serde_json::json!({"peopleRanks": {"id": invalid}})).is_err());
+        }
+    }
 
     #[test]
     fn relationship_roles_preserve_strings_and_legacy_payloads() {
@@ -316,6 +336,7 @@ mod credit_tests {
             person: Person { id: "local".into(), name: "Person".into(), kind: Some(PersonType::Actor), ..Default::default() },
             roles: Some(vec![PersonType::Director, PersonType::Custom("custom name".into())]),
             characters: Some(vec!["Character A".into(), "Character B".into()]),
+            rank: Some(0),
         };
         let wire = serde_json::to_value(&credit).unwrap();
         assert_eq!(wire["type"], "Actor");

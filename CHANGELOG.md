@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.40.0]
+
+- Add optional `Relations.peopleRanks` and `PersonWithRoles.rank` for per-title credit ordering (lower first, zero-based).
+- Missing ranks remain omitted from JSON; legacy payloads remain compatible. Rust struct literals must supply the new field or use `Default`.
+
+
 ## [0.38.0]
 
 - Replace `Person.kind: Option<String>` with `Option<PersonType>` (Rust API breaking change).

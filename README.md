@@ -85,3 +85,12 @@ responses. Legacy consumers can still read the existing person fields.
 `Relations.peopleCharacters` similarly maps credit IDs to character-name lists.
 `PersonWithRoles.characters` returns these optional contextual names. Missing
 entries preserve known names; empty arrays explicitly clear them.
+
+### Credit ordering
+
+`Relations.peopleRanks` optionally maps person reference IDs to unsigned 32-bit
+credit ranks, for example `{"tmdb:1": 0, "tmdb:2": 1}`. Lower ranks come first;
+zero is valid. A rank belongs to one title/person relationship, not the person's
+profile or popularity. Providers should omit unknown ranks rather than inventing
+scores. `PersonWithRoles.rank` exposes the same optional value in credit responses.
+Both fields are omitted when absent and accept legacy payloads without ranks.

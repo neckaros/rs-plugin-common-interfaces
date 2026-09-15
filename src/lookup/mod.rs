@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
-use crate::domain::Relations;
 use crate::domain::book::Book;
 use crate::domain::episode::Episode;
 use crate::domain::media::Media;
 use crate::domain::movie::Movie;
-use crate::domain::person::Person;
-use crate::domain::serie::Serie;
-use crate::{CustomParamTypes, PluginCredential};
-use crate::request::RsGroupDownload;
+use crate::domain::person::{Person, PersonType};
 use crate::domain::rs_ids::{ApplyRsIds, RsIds};
+use crate::domain::serie::Serie;
+use crate::domain::Relations;
+use crate::request::RsGroupDownload;
 use crate::request::RsRequest;
+use crate::{CustomParamTypes, PluginCredential};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
@@ -27,6 +27,42 @@ pub enum RsLookupSourceResult {
     NotApplicable,
 }
 
+/// A person constraint for title metadata searches.
+///
+/// Omitting `role` performs a broad search for the person regardless of their
+/// relationship to the title. Supplying it restricts the match to that exact
+/// canonical or custom role.
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsLookupPersonFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ids: Option<RsIds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<PersonType>,
+}
+
+/// A series constraint for title metadata searches.
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsLookupSerieFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ids: Option<RsIds>,
+}
+
+/// A tag constraint for title metadata searches.
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RsLookupTagFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ids: Option<RsIds>,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RsLookupPerson {
@@ -34,9 +70,7 @@ pub struct RsLookupPerson {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
-
-    
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -46,7 +80,14 @@ pub struct RsLookupSerie {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub people: Option<Vec<RsLookupPersonFilter>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub series: Option<Vec<RsLookupSerieFilter>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<RsLookupTagFilter>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -56,7 +97,7 @@ pub struct RsLookupSerieSeason {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -69,7 +110,7 @@ pub struct RsLookupEpisode {
     pub number: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -81,7 +122,14 @@ pub struct RsLookupBook {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub people: Option<Vec<RsLookupPersonFilter>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub series: Option<Vec<RsLookupSerieFilter>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<RsLookupTagFilter>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -92,7 +140,7 @@ pub struct RsLookupSong {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -102,7 +150,7 @@ pub struct RsLookupMedia {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -112,7 +160,14 @@ pub struct RsLookupMovie {
     pub ids: Option<RsIds>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub page_key: Option<String>
+    pub people: Option<Vec<RsLookupPersonFilter>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub series: Option<Vec<RsLookupSerieFilter>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<RsLookupTagFilter>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString)]
@@ -129,9 +184,7 @@ pub enum RsLookupQuery {
     Song(RsLookupSong),
 }
 
-#[derive(
-    Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString,
-)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, strum_macros::Display, EnumString)]
 #[serde(rename_all = "camelCase")]
 #[strum(serialize_all = "camelCase")]
 pub enum RsLookupMatchType {
@@ -188,7 +241,6 @@ pub struct RsLookupMetadataResults {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub next_page_key: Option<String>,
-    
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq)]
@@ -201,7 +253,6 @@ pub struct RsLookupMetadataResultWrapper {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub match_type: Option<RsLookupMatchType>,
-
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -210,4 +261,69 @@ pub struct RsLookupWrapper {
     pub query: RsLookupQuery,
     pub credential: Option<PluginCredential>,
     pub params: Option<HashMap<String, CustomParamTypes>>,
+}
+
+#[cfg(test)]
+mod filter_tests {
+    use super::*;
+
+    #[test]
+    fn title_filters_serialize_with_optional_person_role() {
+        let query = RsLookupQuery::Movie(RsLookupMovie {
+            name: Some("Ocean's Eleven".into()),
+            people: Some(vec![
+                RsLookupPersonFilter {
+                    name: Some("George Clooney".into()),
+                    ..Default::default()
+                },
+                RsLookupPersonFilter {
+                    name: Some("Steven Soderbergh".into()),
+                    role: Some(PersonType::Director),
+                    ..Default::default()
+                },
+            ]),
+            series: Some(vec![RsLookupSerieFilter {
+                name: Some("Ocean's".into()),
+                ..Default::default()
+            }]),
+            tags: Some(vec![
+                RsLookupTagFilter {
+                    name: Some("Heist".into()),
+                    ..Default::default()
+                },
+                RsLookupTagFilter {
+                    ids: Some("wikidata:Q123".to_string().try_into().unwrap()),
+                    ..Default::default()
+                },
+            ]),
+            ..Default::default()
+        });
+
+        let wire = serde_json::to_value(&query).unwrap();
+        assert_eq!(wire["movie"]["people"][0]["name"], "George Clooney");
+        assert!(wire["movie"]["people"][0].get("role").is_none());
+        assert_eq!(wire["movie"]["people"][1]["role"], "Director");
+        assert_eq!(wire["movie"]["series"][0]["name"], "Ocean's");
+        assert_eq!(wire["movie"]["tags"][0]["name"], "Heist");
+        assert_eq!(wire["movie"]["tags"][1]["ids"]["wikidata"], "Q123");
+        assert_eq!(
+            serde_json::from_value::<RsLookupQuery>(wire).unwrap(),
+            query
+        );
+    }
+
+    #[test]
+    fn unused_title_filters_are_omitted() {
+        for query in [
+            RsLookupQuery::Book(RsLookupBook::default()),
+            RsLookupQuery::Movie(RsLookupMovie::default()),
+            RsLookupQuery::Serie(RsLookupSerie::default()),
+        ] {
+            let wire = serde_json::to_value(query).unwrap();
+            let fields = wire.as_object().unwrap().values().next().unwrap();
+            for field in ["people", "series", "tags"] {
+                assert!(fields.get(field).is_none());
+            }
+        }
+    }
 }

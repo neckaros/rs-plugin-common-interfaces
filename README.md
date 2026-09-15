@@ -100,3 +100,32 @@ names played by an actor still belong in the credit `characters` field.
 Existing compiled plugins do not need updating: older interfaces preserve this
 string as `Custom("Character")`. Rust consumers rebuilding against 0.40.1 may
 need to add an arm if they exhaustively match `PersonType`.
+
+### Title lookup filters (0.41.0)
+
+Book, movie, and series metadata queries accept optional `people`, `series`, and
+`tags` filters. Person filters contain a name and/or external IDs plus an
+optional `role`. Omit `role` to search for the person in any title relationship;
+set it to a canonical or custom `PersonType` string to constrain the credit.
+Series and tag filters likewise accept a name and/or external IDs.
+
+```json
+{
+  "movie": {
+    "name": "Ocean's Eleven",
+    "people": [
+      { "name": "George Clooney" },
+      { "name": "Steven Soderbergh", "role": "Director" }
+    ],
+    "series": [{ "name": "Ocean's" }],
+    "tags": [
+      { "name": "Heist" },
+      { "ids": { "wikidata": "Q123" } }
+    ]
+  }
+}
+```
+
+All new fields are omitted from JSON when absent. Adding them changes Rust
+struct construction, so consumers using literals should add the fields or use
+`..Default::default()` when upgrading to 0.41.0.

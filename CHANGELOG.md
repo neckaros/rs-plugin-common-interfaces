@@ -2,7 +2,7 @@
 
 ## [0.42.0]
 
-- Add `Serie.lang` (original language, ISO 639-1) and `Serie.original` (original title), like `Movie`. Both are omitted from JSON when `None`.
+- Add `Serie.lang` (original language, ISO 639-1), `Serie.original` (original title) and `Serie.overview` (synopsis), like `Movie`. They are omitted from JSON when `None`.
 
 ## [0.40.0]
 

@@ -141,6 +141,9 @@ pub struct Serie {
     /// Original title of the show.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<String>,
+    /// Synopsis of the show.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub overview: Option<String>,
 
     #[serde(serialize_with = "rating_serializer")]
     pub imdb_rating: Option<f32>,
@@ -302,22 +305,25 @@ mod tests {
     }
 
     #[test]
-    fn serie_lang_and_original_round_trip_and_are_omitted_when_none() {
+    fn serie_lang_original_and_overview_round_trip_and_are_omitted_when_none() {
         let serie = Serie {
             id: "serie-1".to_string(),
             name: "Dark".to_string(),
             lang: Some("de".to_string()),
             original: Some("Dark".to_string()),
+            overview: Some("A missing child sets four families on a hunt.".to_string()),
             ..Default::default()
         };
         let value = serde_json::to_value(&serie).unwrap();
         assert_eq!(value.get("lang"), Some(&json!("de")));
         assert_eq!(value.get("original"), Some(&json!("Dark")));
+        assert_eq!(value.get("overview"), Some(&json!("A missing child sets four families on a hunt.")));
         assert_eq!(serde_json::from_value::<Serie>(value).unwrap(), serie);
 
         let value = serde_json::to_value(Serie { name: "Serie".to_string(), ..Default::default() }).unwrap();
         assert!(value.get("lang").is_none());
         assert!(value.get("original").is_none());
+        assert!(value.get("overview").is_none());
     }
 
     #[test]

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.42.0]
+
+- Add `Serie.lang` (original language, ISO 639-1) and `Serie.original` (original title), like `Movie`. Both are omitted from JSON when `None`.
+
 ## [0.40.0]
 
 - Represent plugin credits and title snapshots as `Relations.peopleDetails: Vec<PersonWithRoles>`, with optional inline `roles`, `characters`, integer `rank`, and stored relationship confidence (`conf`). Lower ranks come first; zero is valid.

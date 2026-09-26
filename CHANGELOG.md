@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.43.0]
+
+- Add `Movie.progress_modified` (`progressModified`): when the requesting user's `progress` last changed, in unix milliseconds. Omitted from JSON when `None`.
+
 ## [0.42.0]
 
 - Add `Serie.lang` (original language, ISO 639-1), `Serie.original` (original title) and `Serie.overview` (synopsis), like `Movie`. They are omitted from JSON when `None`.

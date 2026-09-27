@@ -72,6 +72,9 @@ pub struct Movie {
     pub watched: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub progress: Option<u64>,
+    /// When the requesting user's `progress` last changed (unix milliseconds).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub progress_modified: Option<u64>,
 
     #[serde(default)]
     pub posterv: u64,
@@ -160,6 +163,26 @@ mod tests {
             "otherids": "tmdb:42"
         }));
         assert!(invalid.is_err());
+    }
+
+    #[test]
+    fn movie_progress_modified_is_camel_case_and_omitted_when_none() {
+        let movie = Movie {
+            id: "movie-1".to_string(),
+            name: "Movie 1".to_string(),
+            progress: Some(5000),
+            progress_modified: Some(1_790_000_000_000),
+            ..Default::default()
+        };
+        let value = serde_json::to_value(&movie).unwrap();
+        assert_eq!(
+            value.get("progressModified"),
+            Some(&json!(1_790_000_000_000u64))
+        );
+        assert_eq!(serde_json::from_value::<Movie>(value).unwrap(), movie);
+
+        let without = serde_json::to_value(Movie::default()).unwrap();
+        assert!(without.get("progressModified").is_none());
     }
 
     #[test]

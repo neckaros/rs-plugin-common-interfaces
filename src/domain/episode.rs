@@ -48,6 +48,9 @@ pub struct Episode {
     pub watched: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub progress: Option<u64>,
+    /// When the requesting user's `progress` last changed (unix milliseconds).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub progress_modified: Option<u64>,
 
     #[serde(default)]
     pub modified: u64,
@@ -148,6 +151,27 @@ mod tests {
             "otherids": "foo:bar"
         }));
         assert!(invalid.is_err());
+    }
+
+    #[test]
+    fn episode_progress_modified_is_camel_case_and_omitted_when_none() {
+        let episode = Episode {
+            serie: "serie-1".to_string(),
+            season: 1,
+            number: 2,
+            progress: Some(5000),
+            progress_modified: Some(1_790_000_000_000),
+            ..Default::default()
+        };
+        let value = serde_json::to_value(&episode).unwrap();
+        assert_eq!(
+            value.get("progressModified"),
+            Some(&json!(1_790_000_000_000u64))
+        );
+        assert_eq!(serde_json::from_value::<Episode>(value).unwrap(), episode);
+
+        let without = serde_json::to_value(Episode::default()).unwrap();
+        assert!(without.get("progressModified").is_none());
     }
 
     #[test]

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.44.0]
+
+- Add `Episode.progress_modified` (`progressModified`), like `Movie`: when the requesting user's `progress` last changed, in unix milliseconds. Omitted from JSON when `None`.
+
 ## [0.43.0]
 
 - Add `Movie.progress_modified` (`progressModified`): when the requesting user's `progress` last changed, in unix milliseconds. Omitted from JSON when `None`.

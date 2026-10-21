@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.45.0]
+
+- Add `RsProviderStorage` (`used`, `free`, `total`, `volume`), returned by the new optional provider export `storage_info(RsProviderPath)`: the space of the storage behind a library, in bytes. Every field is optional and omitted from JSON when `None`; a storage without a quota leaves out `free` and `total`.
+
 ## [0.44.0]
 
 - Add `Episode.progress_modified` (`progressModified`), like `Movie`: when the requesting user's `progress` last changed, in unix milliseconds. Omitted from JSON when `None`.
